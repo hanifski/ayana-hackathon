@@ -1,0 +1,35 @@
+Prioritize to use the provided shadcn components from components/ui folder as much as possible.
+
+Preferece:
+
+- Use interfaces over types
+- Use functional, declarative programming. Avoid classes.
+- Prefer iteration and modularization over duplication.
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
+- Use lowercase with dashes for directories (e.g., components/auth-wizard).
+- Favor named exports for components.
+- Use the Receive an Object, Return an Object (RORO) pattern.
+
+Naming Conventions:
+
+- Use lowercase with kebab-case for folders & files: (e.g., user-card.tsx).
+- Use kebab-case in API routes (e.g., /api/get-user).
+- Use use prefix and camelCase for custom hooks (e.g., useAuth), store in hooks/.
+- Use camelCase for utility functions, store in utils/ or lib/ (e.g., formatDate.ts).
+- Use UPPER\*CASE for constants (e.g., API_URL).
+- Use PascalCase for Interfaces and store in interfaces/ (e.g., User).
+
+React/Next.js
+
+- Use functional components and TypeScript interfaces.
+- Use function, not const, for components.
+- Use Zod for form validation.
+- Handle errors gracefully and return appropriate responses.
+
+AI SDK
+
+- Use the Vercel AI SDK UI for implementing streaming chat UI.
+- Use the Vercel AI SDK Core to interact with language models.
+- Use the Vercel AI SDK RSC and Stream Helpers to stream and help with the generations.
+- Provide clear error messages to users when AI interactions fail.
+- Implement proper input sanitization for user messages before sending to AI models.
