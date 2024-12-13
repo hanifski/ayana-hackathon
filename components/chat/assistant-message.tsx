@@ -4,19 +4,33 @@ import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { xonokai } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import remarkGfm from "remark-gfm";
+import { Copy } from "lucide-react";
+import { getModelById, getProviderById } from "@/lib/constants/llm-providers";
 
 interface AssistantMessageProps {
   message: Message;
 }
 
 export function AssistantMessage({ message }: AssistantMessageProps) {
+  console.log("Message:", message);
+  console.log("ModelId:", message.modelId);
+
+  const model = message.modelId ? getModelById(message.modelId) : null;
+  console.log("Model:", model);
+
+  const provider = model ? getProviderById(model.providerId) : null;
+  console.log("Provider:", provider);
+
   return (
-    <div className="flex w-full gap-4">
+    <div className="flex w-full gap-4 ">
       <Avatar className="h-8 w-8">
-        <AvatarImage src="/bot-avatar.png" alt="assistant" />
-        <AvatarFallback>AI</AvatarFallback>
+        <AvatarImage
+          src={provider?.avatarUrl || "/bot-avatar.png"}
+          alt={provider?.name || "AI Assistant"}
+        />
+        <AvatarFallback>{provider?.name?.[0] || "AI"}</AvatarFallback>
       </Avatar>
-      <div className="flex-1 space-y-2 p-4 bg-muted rounded-lg">
+      <div id="assistant-message-block" className="flex-1 space-y-2">
         <div className="prose prose-sm dark:prose-invert max-w-none">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
@@ -24,24 +38,46 @@ export function AssistantMessage({ message }: AssistantMessageProps) {
               code({ node, inline, className, children, ...props }) {
                 const match = /language-(\w+)/.exec(className || "");
                 return !inline && match ? (
-                  <SyntaxHighlighter
-                    {...props}
-                    style={xonokai}
-                    language={match[1]}
-                    PreTag="div"
-                    customStyle={{
-                      fontSize: "14px",
-                      backgroundColor: "black",
-                      border: "none",
-                    }}
-                    className="w-full mb-4"
-                  >
-                    {String(children).replace(/\n$/, "")}
-                  </SyntaxHighlighter>
+                  <div className="w-full flex flex-col">
+                    <div className="flex justify-between items-center bg-neutral-800 px-3 py-2 rounded-t-md">
+                      <p className="text-xs text-neutral-300 font-light">
+                        {match[1]}
+                      </p>
+                      <button className="flex items-center">
+                        <Copy className="h-3 w-3 mr-1.5" color="#d4d4d4" />
+                        <p className="text-xs text-neutral-300 font-mono">
+                          Copy
+                        </p>
+                      </button>
+                    </div>
+                    <div
+                      className="flex overflow-x-auto pb-3"
+                      style={{ maxWidth: "100%" }}
+                    >
+                      <SyntaxHighlighter
+                        {...props}
+                        style={xonokai}
+                        language={match[1]}
+                        PreTag="div"
+                        customStyle={{
+                          backgroundColor: "#171717",
+                          border: "none",
+                          borderRadius: "0 0 0.375rem 0.375rem",
+                          overflowX: "auto",
+                        }}
+                        codeTagProps={{
+                          style: { fontSize: "13px" },
+                        }}
+                        className="w-full mb-4"
+                      >
+                        {String(children).replace(/\n$/, "")}
+                      </SyntaxHighlighter>
+                    </div>
+                  </div>
                 ) : (
                   <code
                     {...props}
-                    className="px-1 py-0.5 border rounded-md font-mono text-[13px]"
+                    className="px-1 py-0.5 bg-neutral-100 rounded font-mono text-[13px]"
                   >
                     {children}
                   </code>

@@ -9,6 +9,7 @@ import { useState } from "react";
 import { DashboardHeader } from "@/components/ui/dashboard-header";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // Updated mock data with createdBy property
 const mockAssistants: Assistant[] = [
@@ -45,6 +46,7 @@ function getInitials(name: string): string {
 
 export default function AssistantPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
 
   const filteredAssistants = mockAssistants.filter((assistant) =>
     assistant.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -55,15 +57,18 @@ export default function AssistantPage() {
     { label: "Assistants", isCurrentPage: true },
   ];
 
-  const actions = (
-    <Button variant={"outline"} size={"sm"}>
-      Create Assistant
-    </Button>
-  );
-
   return (
     <>
-      <DashboardHeader breadcrumbs={breadcrumbs} actions={actions} />
+      <DashboardHeader breadcrumbs={breadcrumbs}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.push("/dashboard/assistant/new")}
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          New Assistant
+        </Button>
+      </DashboardHeader>
       <div className="container">
         <div className="flex flex-col space-y-6 max-w-3xl mx-auto">
           {" "}

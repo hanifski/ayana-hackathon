@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
+import { NavConversations } from "@/components/nav-conversations";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
 import {
@@ -22,6 +22,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { NavSecondary } from "@/components/nav-secondary";
 
 // This is sample data.
 const data = {
@@ -47,94 +48,39 @@ const data = {
       plan: "Free",
     },
   ],
-  navMain: [
+  conversations: [
     {
-      title: "Onboarding",
-      url: "#",
-      icon: Handshake,
-      isActive: true,
-      items: [
-        {
-          title: "Step 1",
-          url: "#",
-        },
-        {
-          title: "Step 2",
-          url: "#",
-        },
-        {
-          title: "Step 3",
-          url: "#",
-        },
-      ],
+      id: "1",
+      title: "Project Planning",
+      url: "/chat/project-planning",
+      lastMessage: "Let's discuss the next steps",
+      timestamp: new Date().toISOString(),
     },
     {
-      title: "Models",
-      url: "#",
-      icon: MessageSquare,
-    },
-    /* {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
+      id: "2",
+      title: "Code Review",
+      url: "/chat/code-review",
+      lastMessage: "Can you check this PR?",
+      timestamp: new Date().toISOString(),
     },
     {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    }, */
+      id: "3",
+      title: "Bug Discussion",
+      url: "/chat/bug-discussion",
+      lastMessage: "I found a critical issue",
+      timestamp: new Date().toISOString(),
+    },
   ],
-  projects: [
+  navSecondary: [
     {
-      name: "Chat",
-      url: "chat",
+      title: "Chat",
+      url: "/dashboard/chat",
       icon: MessageSquare,
     },
     {
-      name: "Assistant",
-      url: "assistant",
+      title: "Assistant",
+      url: "/dashboard/assistant",
       icon: BotMessageSquare,
-    },
-    {
-      name: "Settings",
-      url: "settings",
-      icon: Settings,
     },
   ],
 };
@@ -146,8 +92,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavSecondary items={data.navSecondary} />
+        <NavConversations conversations={data.conversations} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
