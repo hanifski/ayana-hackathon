@@ -1,128 +1,98 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+// React & Next
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { signUpSchema, type SignUpInput } from "@/lib/validations/auth";
-import { supabase } from "@/lib/supabase";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+
+// Components
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+
+// Validations
+import { signUpSchema, type SignUpInput } from "@/lib/validations/auth";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+// Supabase
+import { signUp } from "@/lib/supabase/auth";
 
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  // Form
   const form = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
     },
   });
 
-  async function onSubmit(data: SignUpInput) {
-    try {
-      setIsLoading(true);
+  // Handle sign up
+  const handleSignUp = async (data: SignUpInput) => {
+    setIsLoading(true);
+    const result = await signUp(data);
 
-      const { error } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success("Check your email to confirm your account");
-      router.push("/auth");
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Something went wrong"
-      );
-    } finally {
+    if (!result.success) {
+      toast.error(result.error);
       setIsLoading(false);
+      return;
     }
-  }
+
+    setIsLoading(false);
+    router.push(`/dashboard/chat`);
+  };
 
   return (
     <div className="w-full max-w-sm">
-      <div className="text-3xl font-semibold text-center mb-4">Sign up</div>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    className="h-12 text-base"
-                    type="email"
-                    placeholder="Enter your email"
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    className="h-12 text-lg"
-                    type="password"
-                    placeholder="Create a password"
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="flex flex-col space-y-4">
-            <Button
-              className="w-full h-12 text-base"
-              type="submit"
-              disabled={isLoading}
-            >
-              {isLoading ? "Creating account..." : "Create account"}
-            </Button>
-            <div className="text-sm text-center text-muted-foreground">
-              Already have an account?{" "}
-              <Link
-                href="/auth"
-                className="text-primary underline-offset-4 hover:underline"
-              >
-                Sign in
-              </Link>
-            </div>
-          </div>
-        </form>
-      </Form>
+      <h2 className="text-3xl font-semibold text-center mb-4">Sign up</h2>
+      <form onSubmit={form.handleSubmit(handleSignUp)} className="space-y-4">
+        <input
+          {...form.register("name")}
+          type="text"
+          className="flex h-12 w-full p-3 rounded-md border border-input box-border outline-transparent focus:outline-primary bg-background transition-all duration-200 placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          placeholder="Full Name"
+          disabled={isLoading}
+        />
+        {form.formState.errors.name && (
+          <p className="text-sm text-destructive mt-1">
+            {form.formState.errors.name.message}
+          </p>
+        )}
+        <input
+          {...form.register("email")}
+          type="email"
+          className="flex h-12 w-full p-3 rounded-md border border-input box-border outline-transparent focus:outline-primary bg-background transition-all duration-200 placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          placeholder="Email"
+          disabled={isLoading}
+        />
+        {form.formState.errors.email && (
+          <p className="text-sm text-destructive mt-1">
+            {form.formState.errors.email.message}
+          </p>
+        )}
+        <input
+          {...form.register("password")}
+          type="password"
+          className="flex h-12 w-full p-3 rounded-md border border-input box-border outline-transparent focus:outline-primary bg-background transition-all duration-200 placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          placeholder="Password"
+          disabled={isLoading}
+        />
+        {form.formState.errors.password && (
+          <p className="text-sm font-medium text-destructive mt-1">
+            {form.formState.errors.password.message}
+          </p>
+        )}
+        <Button
+          className="w-full h-12 text-base"
+          type="submit"
+          disabled={isLoading}
+        >
+          {isLoading ? "Get ready..." : "Register"}
+        </Button>
+      </form>
     </div>
   );
 }

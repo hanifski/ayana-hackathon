@@ -1,49 +1,99 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { LoginInput, loginSchema } from "@/lib/validations/auth";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { toast } from "sonner";
+
+import { login } from "@/lib/supabase/auth";
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  async function onSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    setIsLoading(true);
+  const form = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
-    // Simple redirect without authentication
-    setTimeout(() => {
-      router.push("/dashboard");
-    }, 1000); // Added small delay to show loading state
-  }
+  const handleLogin = async (data: LoginInput) => {
+    setIsLoading(true);
+    const result = await login(data);
+
+    if (!result.success) {
+      toast.error(result.error);
+      setIsLoading(false);
+      return;
+    }
+
+    toast.success("Logged in successfully");
+    router.push("/dashboard");
+    router.refresh(); // Refresh the router to update server components
+  };
 
   return (
     <div className="w-full max-w-sm">
-      <div className="text-3xl font-semibold text-center mb-4">
+      <div className="text-3xl font-semibold text-center mb-8">
         Log in to Etalas
       </div>
-      <form onSubmit={onSubmit}>
-        <div className="space-y-4">
-          <Input
-            className="h-12 text-base"
-            id="email"
-            type="email"
-            placeholder="Enter your email"
-            required
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="email"
+                    placeholder="Enter your email"
+                    disabled={isLoading}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
 
-          <Input
-            className="h-12 text-base"
-            id="password"
-            type="password"
-            placeholder="Enter your password"
-            required
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="password"
+                    placeholder="Enter your password"
+                    disabled={isLoading}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-        <div className="flex flex-col space-y-4 mt-4">
+
           <Button
             className="w-full h-12 text-base"
             type="submit"
@@ -51,17 +101,8 @@ export default function AuthPage() {
           >
             {isLoading ? "Logging in..." : "Log in"}
           </Button>
-          <div className="text-sm text-center text-muted-foreground">
-            Don't have an account?{" "}
-            <Link
-              href="/auth/signup"
-              className="text-primary underline-offset-4 hover:underline"
-            >
-              Sign up
-            </Link>
-          </div>
-        </div>
-      </form>
+        </form>
+      </Form>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useChat } from "ai/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserMessage } from "@/components/chat/user-message";
 import { AssistantMessage } from "@/components/chat/assistant-message";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSearchParams } from "next/navigation";
+import { Assistant } from "@/interfaces/assistant";
 
 const breadcrumbs = [
   { label: "Dashboard", href: "/dashboard" },
@@ -22,6 +24,9 @@ const breadcrumbs = [
 ];
 
 export default function ChatPage() {
+  const searchParams = useSearchParams();
+  const assistantId = searchParams.get("assistant");
+  const [assistant, setAssistant] = useState<Assistant | null>(null);
   const [selectedModel, setSelectedModel] = useState("claude-3-haiku-20240307");
   const { messages, input, handleInputChange, handleSubmit, isLoading } =
     useChat({
@@ -30,6 +35,16 @@ export default function ChatPage() {
         model: selectedModel,
       },
     });
+
+  useEffect(() => {
+    // Fetch assistant details if assistantId is present
+    if (assistantId) {
+      fetch(`/api/assistants/${assistantId}`)
+        .then((res) => res.json())
+        .then((data) => setAssistant(data))
+        .catch((error) => console.error("Error fetching assistant:", error));
+    }
+  }, [assistantId]);
 
   return (
     <>

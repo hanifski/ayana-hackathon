@@ -1,54 +1,43 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Assistant } from "@/interfaces/assistant";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
 import { DashboardHeader } from "@/components/ui/dashboard-header";
 import { Plus } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-// Updated mock data with createdBy property
-const mockAssistants: Assistant[] = [
-  {
-    id: "1",
-    name: "General Assistant",
-    description:
-      "A versatile AI assistant for scheduling, information, and answering questions.",
-    createdBy: "Admin",
-  },
-  {
-    id: "2",
-    name: "Code Helper",
-    description:
-      "Assists with debugging, writing, and understanding code snippets.",
-    createdBy: "Developer",
-  },
-  {
-    id: "3",
-    name: "Writing Assistant",
-    description:
-      "Offers suggestions, improves grammar, and enhances writing quality.",
-    createdBy: "Content Team",
-  },
-];
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((word) => word[0])
-    .join("")
-    .toUpperCase();
-}
+import { toast } from "sonner";
+import Link from "next/link";
 
 export default function AssistantPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [assistants, setAssistants] = useState<Assistant[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  const filteredAssistants = mockAssistants.filter((assistant) =>
+  useEffect(() => {
+    async function fetchAssistants() {
+      try {
+        const response = await fetch("/api/assistants");
+        if (!response.ok) throw new Error("Failed to fetch assistants");
+
+        const data = await response.json();
+        setAssistants(data);
+      } catch (error) {
+        console.error("Error:", error);
+        toast.error("Failed to load assistants");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchAssistants();
+  }, []);
+
+  const filteredAssistants = assistants.filter((assistant) =>
     assistant.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -71,13 +60,12 @@ export default function AssistantPage() {
       </DashboardHeader>
       <div className="container">
         <div className="flex flex-col space-y-6 max-w-3xl mx-auto">
-          {" "}
           <div className="flex flex-col gap-4 items-center justify-between">
             <div className="w-full sm:w-[300px]"></div>
             <h2 className="text-4xl font-semibold">Assistants</h2>
             <p className="max-w-xl text-center text-muted-foreground">
               Discover or create your custom versions of assistant that combines
-              instruction, knowledge and style{" "}
+              instruction, knowledge and style
             </p>
             <Input
               className="h-14 px-5 text-base"
@@ -86,39 +74,59 @@ export default function AssistantPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {filteredAssistants.map((assistant) => (
-              <Card
-                key={assistant.id}
-                className="hover:shadow-lg transition-shadow"
-              >
-                <CardHeader className="flex flex-row items-center p-4 gap-4">
-                  <Avatar>
-                    <AvatarImage
-                      src="https://github.com/shadcn.png"
-                      alt="@shadcn"
-                    />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col h-fit">
-                    <h2 className="text-sm font-medium">{assistant.name}</h2>
 
-                    <p className="text-xs text-muted-foreground">
-                      by {assistant.createdBy}
-                    </p>
-                  </div>
-                  <Button variant="ghost"></Button>
-                </CardHeader>
-                <CardContent className="flex gap-3">
-                  <p className="text-xs text-muted-foreground">
-                    {assistant.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="text-center text-muted-foreground">Loading...</div>
+          ) : filteredAssistants.length === 0 ? (
+            <div className="text-center text-muted-foreground">
+              {searchQuery
+                ? "No assistants found"
+                : "No assistants yet. Create your first one!"}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {filteredAssistants.map((assistant) => (
+                <Link
+                  key={assistant.id}
+                  href={`/dashboard/chat?assistant=${assistant.id}`}
+                  className="block"
+                >
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                    <CardHeader className="flex flex-row items-center p-4 gap-4">
+                      <Avatar>
+                        <AvatarFallback>
+                          {getInitials(assistant.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col h-fit">
+                        <h2 className="text-sm font-medium">
+                          {assistant.name}
+                        </h2>
+                        <p className="text-xs text-muted-foreground">
+                          {assistant.model}
+                        </p>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="flex gap-3">
+                      <p className="text-xs text-muted-foreground">
+                        {assistant.instructions}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </>
   );
+}
+
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
 }

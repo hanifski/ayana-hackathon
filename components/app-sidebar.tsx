@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useEffect, useState } from "react";
 import {
   AudioWaveform,
   Command,
@@ -23,6 +24,8 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { NavSecondary } from "@/components/nav-secondary";
+import { getProfile } from "@/lib/supabase/profile";
+import { Profile } from "@/interfaces/profile";
 
 // This is sample data.
 const data = {
@@ -86,17 +89,30 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [profile, setProfile] = useState<Profile | null>(null);
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <div className="p-2 text-lg font-semibold">
+          {" "}
+          <h2>Etalas.ai</h2>
+        </div>
+
+        {/* <TeamSwitcher teams={data.teams} /> */}
       </SidebarHeader>
       <SidebarContent>
         <NavSecondary items={data.navSecondary} />
         <NavConversations conversations={data.conversations} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser
+          user={{
+            name: `asd`,
+            email: `asd@gmail.com`,
+            avatar: "",
+          }}
+        />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
