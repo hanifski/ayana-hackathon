@@ -14,7 +14,7 @@ export function UserMessage({ message }: UserMessageProps) {
           <AvatarImage src="/user-avatar.png" alt="user" />
           <AvatarFallback>Y</AvatarFallback>
         </Avatar>{" "}
-        <div className="prose prose-sm dark:prose-invert max-w-none flex-1 space-y-2 p-2 bg-muted rounded-md">
+        <div className="prose prose-sm dark:prose-invert max-w-none w-fit space-y-2 px-3 py-1 bg-muted rounded-md">
           <p className="text-[15px] whitespace-pre-wrap">{message.content}</p>
         </div>
       </div>

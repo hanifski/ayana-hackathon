@@ -1,11 +1,9 @@
 "use client";
 
-import { useSupabase } from "@/providers/supabase-provider";
+import supabase from "@/lib/supabase/client";
 import { Profile } from "@/interfaces/profile";
 
 export function profileService() {
-  const supabase = useSupabase();
-
   const create = async (uuid: string) => {
     try {
       const { data: profile, error } = await supabase

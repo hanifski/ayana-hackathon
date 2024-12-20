@@ -44,7 +44,7 @@ export default function ChatPage() {
         .then((data) => setAssistant(data))
         .catch((error) => console.error("Error fetching assistant:", error));
     }
-  }, [assistantId]);
+  }, [assistantId, selectedModel]);
 
   return (
     <>
@@ -108,7 +108,13 @@ export default function ChatPage() {
                   value={input}
                   onChange={handleInputChange}
                   rows={2}
-                  className="w-full resize-none px-3 pt-3 text-[15px] outline-none bg-transparent "
+                  className="w-full resize-none px-3 pt-3 text-[15px] outline-none bg-transparent"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSubmit(e);
+                    }
+                  }}
                 />
                 <div className="flex flex-1 justify-between p-3">
                   <Button variant="outline" size="icon" className="size-8">

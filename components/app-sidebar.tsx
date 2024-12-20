@@ -24,7 +24,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { NavSecondary } from "@/components/nav-secondary";
-import { getProfile } from "@/lib/supabase/profile";
+import { profileService } from "@/lib/supabase/profile";
 import { Profile } from "@/interfaces/profile";
 
 // This is sample data.

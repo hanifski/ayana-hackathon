@@ -1,11 +1,9 @@
 "use client";
 
 import { Assistant } from "@/interfaces/assistant";
-import { useSupabase } from "@/providers/supabase-provider";
+import supabase from "@/lib/supabase/client";
 
 export function assistantService() {
-  const supabase = useSupabase();
-
   const create = async (
     assistantId: string,
     assistantName: string,
@@ -99,9 +97,35 @@ export function assistantService() {
     }
   };
 
+  const getAll = async () => {
+    try {
+      const { data: assistants, error } = await supabase
+        .from("assistant")
+        .select("*");
+
+      if (error) {
+        throw error;
+      }
+
+      return {
+        success: true,
+        data: assistants as Assistant[],
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "An error occurred while fetching assistants",
+      };
+    }
+  };
+
   return {
     create,
     get,
     update,
+    getAll,
   };
 }

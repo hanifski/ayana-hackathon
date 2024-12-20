@@ -1,33 +1,37 @@
 import { anthropic } from "@ai-sdk/anthropic";
 import { streamText } from "ai";
 import { Message } from "@/interfaces/chat";
-import { nanoid } from "nanoid";
+
+// Allow streaming responses up to 30 seconds
+export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  console.log("API Keys loaded:", {
-    anthropic: !!process.env.ANTHROPIC_API_KEY,
-  });
-  const { messages, model } = await req.json();
+  try {
+    console.log("API Keys loaded:", {
+      anthropic: !!process.env.ANTHROPIC_API_KEY,
+    });
 
-  const response = streamText({
-    model: anthropic(model, {
-      cacheControl: true,
-    }),
-    maxTokens: 512,
-    temperature: 0.3,
-    maxRetries: 5,
-    prompt: messages.map((message: any) => message.content).join("\n"),
-  });
+    const { messages, model } = await req.json();
 
-  const responseContent = await response.toDataStreamResponse();
+    const response = streamText({
+      model: anthropic(model, {
+        cacheControl: true,
+      }),
+      maxTokens: 512,
+      temperature: 0.3,
+      maxRetries: 5,
+      messages: messages.map((message: Message) => ({
+        role: message.role,
+        content: message.content,
+      })),
+    });
 
-  const assistantMessage: Message = {
-    id: nanoid(),
-    role: "assistant",
-    content: await responseContent.text(),
-    modelId: "claude-3-sonnet",
-    createdAt: new Date(),
-  };
-
-  return response.toDataStreamResponse();
+    return response.toDataStreamResponse();
+  } catch (error) {
+    console.error("Error in chat API:", error);
+    return new Response(JSON.stringify({ error: "An error occurred" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }

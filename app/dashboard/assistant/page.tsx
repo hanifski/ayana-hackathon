@@ -11,6 +11,7 @@ import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
+import { assistantService } from "@/lib/supabase/assistant";
 
 export default function AssistantPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,20 +21,14 @@ export default function AssistantPage() {
 
   useEffect(() => {
     async function fetchAssistants() {
-      try {
-        const response = await fetch("/api/assistants");
-        if (!response.ok) throw new Error("Failed to fetch assistants");
-
-        const data = await response.json();
+      const { success, data, error } = await assistantService().getAll();
+      if (data) {
         setAssistants(data);
-      } catch (error) {
-        console.error("Error:", error);
-        toast.error("Failed to load assistants");
-      } finally {
-        setIsLoading(false);
+      } else {
+        toast.error(error);
       }
+      setIsLoading(false);
     }
-
     fetchAssistants();
   }, []);
 
@@ -52,7 +47,7 @@ export default function AssistantPage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => router.push("/dashboard/assistant/new")}
+          onClick={() => router.push("/dashboard/chat/new")}
         >
           <Plus className="mr-2 h-4 w-4" />
           New Assistant
