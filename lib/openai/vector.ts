@@ -2,6 +2,7 @@
 
 import OpenAI from "openai";
 import { VectorCreate, VectorUpdate } from "@/interfaces/openai.interface";
+import { error } from "console";
 
 // Initialize OpenAI
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY as string });
@@ -12,6 +13,7 @@ export async function _createVectorStore(input: VectorCreate) {
     name: input.name,
   });
 
+  if (error) throw error;
   return output.id;
 }
 

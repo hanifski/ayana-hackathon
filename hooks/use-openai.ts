@@ -1,9 +1,9 @@
 import { useState } from "react";
 
-// Lib
+// Server functions
 import { _createVectorStore, _updateVectorStore } from "@/lib/openai/vector";
-import { _uploadFile } from "@/lib/openai/file";
 import { _createAssistant } from "@/lib/openai/assistant";
+import { _uploadFile } from "@/lib/openai/file";
 
 // Interfaces
 import { FileUpload } from "@/interfaces/openai.interface";

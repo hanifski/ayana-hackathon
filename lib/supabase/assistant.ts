@@ -1,7 +1,7 @@
 "use client";
 
 import { Assistant } from "@/interfaces/assistant";
-import { createClient } from "@/lib/supabase/supabase-client";
+import { createClient } from "@/lib/supabase/client-browser";
 
 const supabase = createClient();
 

@@ -2,8 +2,10 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { profileService } from "@/lib/supabase/profile";
-import { userService } from "@/lib/supabase/user";
-import { useAuth } from "@/hooks/use-auth2";
+
+import { useAuth } from "@/hooks/use-auth";
+import { useSupabase } from "@/hooks/use-supabase";
+import { Profile } from "@/types/supabase";
 
 // Define the shape of our user data
 interface UserData {
@@ -27,12 +29,12 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 // Create the provider component
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<UserData | null>(null);
   const { getCurrentUser } = useAuth();
+  const { data: myProfile } = useSupabase<Profile>("profiles");
 
-  // const { getCurrentUser } = userService();
-  const { getProfile } = profileService();
+  console.log("myProfile", myProfile?.[0].name);
 
   // Function to fetch user data
   const fetchUser = async () => {
@@ -43,7 +45,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         const newUserData: UserData = {
           id: userData.user.id,
           email: userData.user.email || "",
-          name: "",
+          name: myProfile?.[0].name || "",
           avatar_url: "",
           active_workspace: "",
         };

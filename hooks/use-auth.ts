@@ -1,85 +1,88 @@
+// React, Next & Hooks
 import { useState } from "react";
-import { SignUpInput, LoginInput } from "@/lib/validations/auth";
+import {
+  _loginWithPassword,
+  _logout,
+  _getCurrentUser,
+  _signUpWithEmail,
+} from "@/lib/supabase/auth";
+
+// Components
 import { toast } from "sonner";
 
-const useAuth = () => {
-  const [loginLoading, setLoginLoading] = useState(false);
-  const [signupLoading, setSignupLoading] = useState(false);
-  const [logoutLoading, setLogoutLoading] = useState(false);
+// Interfaces & Types
+import { LoginInput, SignUpInput } from "@/lib/validations/auth";
 
-  const login = async (data: LoginInput) => {
-    setLoginLoading(true);
+export function useAuth() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  async function loginWithPassword(input: LoginInput) {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || "Something went wrong, try again.");
-      }
-      toast.success("Successfully logged in.");
-      return true;
+      const output = await _loginWithPassword(input);
+      return output;
     } catch (error: any) {
-      toast.error(error.message || "Check your network, try again.");
-      return false;
+      setError(error instanceof Error ? error.message : "An error occurred");
+      toast.error(error.message || "Login failed, please try again.");
+      return null;
     } finally {
-      setLoginLoading(false);
+      setLoading(false);
     }
-  };
+  }
 
-  const signup = async (data: SignUpInput) => {
-    setSignupLoading(true);
+  async function logout() {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || "Something went wrong, try again.");
-      }
-      toast.success("Account created successfully.");
-      return true;
+      const output = await _logout();
+      return output;
     } catch (error: any) {
-      toast.error(error.message || "Check your network, try again.");
-      return false;
+      setError(error instanceof Error ? error.message : "An error occurred");
+      toast.error(error.message || "Logout failed, please try again.");
+      return null;
     } finally {
-      setSignupLoading(false);
+      setLoading(false);
     }
-  };
+  }
 
-  const logout = async () => {
-    setLogoutLoading(true);
+  async function getCurrentUser() {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await fetch("/api/auth/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(result.error || "Something went wrong, try again.");
-      }
-      toast.success("Logout successfully.");
-      return true;
+      const output = await _getCurrentUser();
+      return output;
     } catch (error: any) {
-      toast.error(error.message || "Check your network, try again.");
-      return false;
+      setError(error instanceof Error ? error.message : "An error occurred");
+      toast.error(error.message || "Failed to get current user.");
+      return null;
     } finally {
-      setLogoutLoading(false);
+      setLoading(false);
     }
-  };
+  }
+
+  async function signUp(input: SignUpInput) {
+    setLoading(true);
+    setError(null);
+    try {
+      const output = await _signUpWithEmail(input);
+      return output;
+    } catch (error: any) {
+      setError(error instanceof Error ? error.message : "An error occurred");
+      toast.error(error.message || "Sign up failed, please try again.");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return {
-    login,
-    loginLoading,
-    signup,
-    signupLoading,
+    loginWithPassword,
     logout,
+    getCurrentUser,
+    signUp,
+    loading,
+    error,
   };
-};
-
-export default useAuth;
+}

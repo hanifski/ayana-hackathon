@@ -1,8 +1,9 @@
 "use client";
 
 //React
-import { use, useEffect, useState } from "react";
-import { useUser } from "@/providers/user-provider";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useSupabase } from "@/hooks/use-supabase";
 
 // Components
 import { Button } from "@/components/ui/button";
@@ -18,15 +19,27 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export function WorkspaceChecker() {
-  const { user, isLoading } = useUser();
-  const [openDialog, setOpenDialog] = useState(false);
+//Validation
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Profile } from "@/types/supabase";
+import { WorkspaceInput, workspaceSchema } from "@/lib/validations/workspace";
 
-  // useEffect(() => {
-  //   if (user && !isLoading && !user.workspaceId) {
-  //     setOpenDialog(true);
-  //   }
-  // }, [id]);
+export function WorkspaceChecker() {
+  const [openDialog, setOpenDialog] = useState(false);
+  const { data: myProfile } = useSupabase<Profile>("profiles");
+
+  const form = useForm<WorkspaceInput>({
+    resolver: zodResolver(workspaceSchema),
+    defaultValues: {
+      name: "",
+    },
+  });
+
+  useEffect(() => {
+    if (myProfile && !myProfile[0].active_workspace) {
+      setOpenDialog(true);
+    }
+  }, [myProfile]);
 
   return (
     <Dialog open={openDialog}>
@@ -40,10 +53,19 @@ export function WorkspaceChecker() {
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <Label htmlFor="name">Workspace Name</Label>
-          <Input id="name" value="Pedro Duarte" className="col-span-3" />
+          <Input
+            {...form.register("name")}
+            type="text"
+            className="col-span-3"
+          />
+          {form.formState.errors.name && (
+            <p className="text-sm text-destructive mt-1">
+              {form.formState.errors.name.message}
+            </p>
+          )}
         </div>
         <DialogFooter>
-          <Button type="submit">Save changes</Button>
+          <Button type="submit">Get started</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

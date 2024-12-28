@@ -1,6 +1,6 @@
 "use client";
 
-import useAuth from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import {
   BadgeCheck,
@@ -39,9 +39,11 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
-    router.push("/auth/logout");
+    await logout();
+    router.push("/auth");
   };
 
   return (

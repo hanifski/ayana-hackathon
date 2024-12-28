@@ -1,6 +1,6 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/supabase-client";
+import { createClient } from "@/lib/supabase/client-browser";
 import { WorkspaceResponse } from "@/interfaces/workspace";
 
 export function workspaceService() {

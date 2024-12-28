@@ -3,7 +3,8 @@
 // React & Next
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import useAuth from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
+import { useSupabase } from "@/hooks/use-supabase";
 
 // Components
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,8 @@ import { signUpSchema, SignUpInput } from "@/lib/validations/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function SignUpPage() {
-  const { signup, signupLoading } = useAuth();
+  const { signUp, loading } = useAuth();
+  const { insert } = useSupabase<any>("profiles");
   const router = useRouter();
 
   // Form
@@ -27,9 +29,13 @@ export default function SignUpPage() {
     },
   });
 
-  const handleSignUp = async (data: SignUpInput) => {
-    const signupSuccess = await signup(data);
-    if (signupSuccess) {
+  const handleSignUp = async (input: SignUpInput) => {
+    const response = await signUp(input);
+    if (response && response.user) {
+      await insert({
+        name: form.getValues("name"),
+        user_id: response.user.id,
+      });
       router.push("/dashboard");
     }
   };
@@ -42,7 +48,7 @@ export default function SignUpPage() {
           {...form.register("name")}
           type="text"
           placeholder="Full Name"
-          disabled={signupLoading}
+          disabled={loading}
           className="h-12"
         />
         {form.formState.errors.name && (
@@ -55,7 +61,7 @@ export default function SignUpPage() {
           type="email"
           className="flex h-12 w-full p-3 rounded-md border border-input box-border outline-transparent focus:outline-primary bg-background transition-all duration-200 placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
           placeholder="Email"
-          disabled={signupLoading}
+          disabled={loading}
         />
         {form.formState.errors.email && (
           <p className="text-sm text-destructive mt-1">
@@ -67,7 +73,7 @@ export default function SignUpPage() {
           type="password"
           className="flex h-12 w-full p-3 rounded-md border border-input box-border outline-transparent focus:outline-primary bg-background transition-all duration-200 placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
           placeholder="Password"
-          disabled={signupLoading}
+          disabled={loading}
         />
         {form.formState.errors.password && (
           <p className="text-sm font-medium text-destructive mt-1">
@@ -77,9 +83,9 @@ export default function SignUpPage() {
         <Button
           className="w-full h-12 text-base"
           type="submit"
-          disabled={signupLoading}
+          disabled={loading}
         >
-          {signupLoading ? "Get ready..." : "Register"}
+          {loading ? "Get ready..." : "Register"}
         </Button>
       </form>
     </div>

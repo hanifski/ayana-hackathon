@@ -1,6 +1,6 @@
 "use client";
 
-import { createClient } from "@/lib/supabase/supabase-client";
+import { createClient } from "@/lib/supabase/client-browser";
 import { Profile } from "@/interfaces/profile";
 
 const supabase = createClient();

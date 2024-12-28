@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient } from "./supabase-server";
+import { createClient } from "./client-server";
 import { LoginInput, SignUpInput } from "../validations/auth";
 
 export async function _loginWithPassword(input: LoginInput) {

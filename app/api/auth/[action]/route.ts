@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/supabase-server";
+import { createClient } from "@/lib/supabase/client-server";
 import {
   LoginInput,
   SignUpInput,
