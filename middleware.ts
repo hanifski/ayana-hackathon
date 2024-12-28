@@ -1,28 +1,24 @@
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { updateSession } from "./lib/supabase/supabase-middleware";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req: request, res });
+  // update user's auth session
+  const user = await updateSession(request);
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  // If no session and trying to access protected routes
-  if (!session && request.nextUrl.pathname.startsWith("/dashboard")) {
+  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
     return NextResponse.redirect(new URL("/auth", request.url));
   }
-
-  // If session exists and trying to access auth page
-  if (session && request.nextUrl.pathname === "/auth") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  return res;
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/auth"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };

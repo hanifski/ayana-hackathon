@@ -1,15 +1,8 @@
-"use client";
-
 import "./globals.css";
-import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "sonner";
+import { ThemeProvider } from "@/providers/theme-provider";
+import { UserProvider } from "@/providers/user-provider";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: any) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-system">
@@ -19,9 +12,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          {" "}
+          <UserProvider>{children}</UserProvider>
         </ThemeProvider>
-        <Toaster />
       </body>
     </html>
   );

@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 import {
   AudioWaveform,
   Command,
@@ -12,10 +13,10 @@ import {
   BotMessageSquare,
 } from "lucide-react";
 
-import { NavMain } from "@/components/nav-main";
-import { NavConversations } from "@/components/nav-conversations";
-import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
+import { NavMain } from "@/components/sidebar/nav-main";
+import { NavConversations } from "@/components/sidebar/nav-conversations";
+import { NavUser } from "@/components/sidebar/nav-user";
+import { TeamSwitcher } from "@/components/sidebar/team-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -23,17 +24,12 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { NavSecondary } from "@/components/nav-secondary";
-import { profileService } from "@/lib/supabase/profile";
-import { Profile } from "@/interfaces/profile";
+import { NavSecondary } from "@/components/sidebar/nav-secondary";
+import { useUser } from "@/providers/user-provider";
+import { UserContextInterface } from "@/interfaces/user";
 
 // This is sample data.
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   teams: [
     {
       name: "Acme Inc",
@@ -57,21 +53,21 @@ const data = {
       title: "Project Planning",
       url: "/chat/project-planning",
       lastMessage: "Let's discuss the next steps",
-      timestamp: new Date().toISOString(),
+      timestamp: "",
     },
     {
       id: "2",
       title: "Code Review",
       url: "/chat/code-review",
       lastMessage: "Can you check this PR?",
-      timestamp: new Date().toISOString(),
+      timestamp: "",
     },
     {
       id: "3",
       title: "Bug Discussion",
       url: "/chat/bug-discussion",
       lastMessage: "I found a critical issue",
-      timestamp: new Date().toISOString(),
+      timestamp: "",
     },
   ],
   navSecondary: [
@@ -88,31 +84,33 @@ const data = {
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [profile, setProfile] = useState<Profile | null>(null);
+export function AppSidebar() {
+  const { user } = useUser();
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="p-2 text-lg font-semibold">
           {" "}
           <h2>Etalas.ai</h2>
         </div>
 
-        {/* <TeamSwitcher teams={data.teams} /> */}
+        <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
         <NavSecondary items={data.navSecondary} />
         <NavConversations conversations={data.conversations} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser
-          user={{
-            name: `asd`,
-            email: `asd@gmail.com`,
-            avatar: "",
-          }}
-        />
+        {user && (
+          <NavUser
+            user={{
+              name: user.name,
+              email: user.email,
+              avatar: user.avatar_url,
+            }}
+          />
+        )}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

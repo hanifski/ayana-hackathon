@@ -1,78 +1,44 @@
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { LoginInput, SignUpInput } from "@/lib/validations/auth";
+"use server";
 
-export async function login({ email, password }: LoginInput) {
-  const supabase = createClientComponentClient();
+import { createClient } from "./supabase-server";
+import { LoginInput, SignUpInput } from "../validations/auth";
 
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+export async function _loginWithPassword(input: LoginInput) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithPassword(input);
 
-    if (error) {
-      return { success: false, error: error.message };
-    }
-
-    return { success: true, data };
-  } catch (error) {
-    return {
-      success: false,
-      error: "An unexpected error occurred during login",
-    };
+  if (error) {
+    console.log(error);
   }
+  return data;
 }
 
-export async function logout() {
-  const supabase = createClientComponentClient();
+export async function _logout() {
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signOut();
 
-  try {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    return { success: true };
-  } catch (error) {
-    return {
-      success: false,
-      error: "An error occurred during logout",
-    };
+  if (error) {
+    console.log(error);
   }
+  return null;
 }
 
-export async function signUp({ email, password, name }: SignUpInput) {
-  const supabase = createClientComponentClient();
+export async function _getCurrentUser() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.getUser();
 
-  try {
-    // Sign up the user
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (signUpError) {
-      return { success: false, error: signUpError.message };
-    }
-
-    if (!data.user) {
-      return { success: false, error: "User data is not available" };
-    }
-
-    // Insert profile data into the profile table
-    const { error: profileError } = await supabase.from("profile").insert([
-      {
-        user_id: data.user.id,
-        name: name,
-      },
-    ]);
-
-    if (profileError) {
-      return { success: false, error: profileError.message };
-    }
-
-    return { success: true, data };
-  } catch (error) {
-    return {
-      success: false,
-      error: "An unexpected error occurred during signup",
-    };
+  if (error) {
+    console.log(error);
   }
+  return data;
+}
+
+export async function _signUpWithEmail(input: SignUpInput) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signUp(input);
+
+  if (error) {
+    console.log(error);
+  }
+  return data;
 }

@@ -1,10 +1,10 @@
 "use client";
 
-import { useSupabase } from "@/providers/supabase-provider";
+import { createClient } from "@/lib/supabase/supabase-client";
 import { WorkspaceResponse } from "@/interfaces/workspace";
 
 export function workspaceService() {
-  const supabase = useSupabase();
+  const supabase = createClient();
 
   const createWorkspace = async (
     userId: string,

@@ -1,43 +1,85 @@
-import { useCallback, useEffect, useState } from "react";
-import { User } from "@supabase/supabase-js";
-import { useSupabase } from "@/providers/supabase-provider";
+import { useState } from "react";
+import { SignUpInput, LoginInput } from "@/lib/validations/auth";
+import { toast } from "sonner";
 
-export function useAuth() {
-  const supabase = useSupabase();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+const useAuth = () => {
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [signupLoading, setSignupLoading] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
 
-  const getUser = useCallback(async () => {
+  const login = async (data: LoginInput) => {
+    setLoginLoading(true);
+
     try {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession();
-
-      if (error) throw error;
-
-      setUser(session?.user ?? null);
-    } catch (error) {
-      console.error("Error getting user:", error);
-      setUser(null);
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Something went wrong, try again.");
+      }
+      toast.success("Successfully logged in.");
+      return true;
+    } catch (error: any) {
+      toast.error(error.message || "Check your network, try again.");
+      return false;
     } finally {
-      setLoading(false);
+      setLoginLoading(false);
     }
-  }, []);
+  };
 
-  useEffect(() => {
-    getUser();
+  const signup = async (data: SignUpInput) => {
+    setSignupLoading(true);
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Something went wrong, try again.");
+      }
+      toast.success("Account created successfully.");
+      return true;
+    } catch (error: any) {
+      toast.error(error.message || "Check your network, try again.");
+      return false;
+    } finally {
+      setSignupLoading(false);
+    }
+  };
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+  const logout = async () => {
+    setLogoutLoading(true);
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Something went wrong, try again.");
+      }
+      toast.success("Logout successfully.");
+      return true;
+    } catch (error: any) {
+      toast.error(error.message || "Check your network, try again.");
+      return false;
+    } finally {
+      setLogoutLoading(false);
+    }
+  };
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [getUser]);
+  return {
+    login,
+    loginLoading,
+    signup,
+    signupLoading,
+    logout,
+  };
+};
 
-  return { user, loading };
-}
+export default useAuth;

@@ -1,29 +1,20 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth2";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginInput, loginSchema } from "@/lib/validations/auth";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { toast } from "sonner";
 
-import { login } from "@/lib/supabase/auth";
-
 export default function AuthPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  // const { login, loginLoading } = useAuth();
   const router = useRouter();
+  const { loginWithPassword, loading } = useAuth();
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -34,75 +25,67 @@ export default function AuthPage() {
   });
 
   const handleLogin = async (data: LoginInput) => {
-    setIsLoading(true);
-    const result = await login(data);
-
-    if (!result.success) {
-      toast.error(result.error);
-      setIsLoading(false);
-      return;
+    const loginSuccess = await loginWithPassword(data);
+    if (loginSuccess) {
+      router.push("/dashboard");
+    } else {
+      toast.error("Login failed, please try again.");
     }
-
-    toast.success("Logged in successfully");
-    router.push("/dashboard");
-    router.refresh(); // Refresh the router to update server components
   };
 
+  // const handleLogin = async (data: LoginInput) => {
+  //   const loginSuccess = await login(data);
+
+  //   if (loginSuccess) {
+  //     router.push("/dashboard");
+  //   } else {
+  //     toast.error("Login failed, please try again.");
+  //   }
+  // };
+
   return (
-    <div className="w-full max-w-sm">
-      <div className="text-3xl font-semibold text-center mb-8">
-        Log in to Etalas
-      </div>
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="email"
-                    placeholder="Enter your email"
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+    <>
+      <div className="w-full max-w-sm">
+        <div className="text-3xl font-semibold text-center mb-4">Log in</div>
+        <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-4">
+          <div className="space-y-1">
+            <Input
+              {...form.register("email")}
+              type="email"
+              placeholder="Email"
+              disabled={loading}
+              className="h-12"
+            />
+            {form.formState.errors.email && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.email.message}
+              </p>
             )}
-          />
-
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="password"
-                    placeholder="Enter your password"
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          </div>
+          <div className="space-y-1">
+            <Input
+              {...form.register("password")}
+              type="password"
+              placeholder="Password"
+              disabled={loading}
+              {...form.register("password")}
+              className="h-12"
+            />
+            {form.formState.errors.password && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.password.message}
+              </p>
             )}
-          />
-
+          </div>
           <Button
             className="w-full h-12 text-base"
             type="submit"
-            disabled={isLoading}
+            disabled={loading}
           >
-            {isLoading ? "Logging in..." : "Log in"}
+            {loading ? "Logging in..." : "Log in"}
           </Button>
         </form>
-      </Form>
-    </div>
+      </div>
+    </>
   );
 }

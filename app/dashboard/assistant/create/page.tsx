@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { cn } from "@/lib/utils";
 
-import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createAssistantSchema } from "@/lib/validations/assistant";
+
+import { CreateAssistantInput } from "@/lib/validations/assistant2";
 
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -48,14 +49,12 @@ export default function page() {
     createAssistant,
   } = useOpenAI();
 
-  // Set up form with validation
-  const form = useForm<z.infer<typeof createAssistantSchema>>({
+  const form = useForm<CreateAssistantInput>({
     resolver: zodResolver(createAssistantSchema),
     defaultValues: {
-      name: "New Assistant",
+      name: "",
       model: "",
-      instructions:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      instructions: "",
       temperature: 0.7,
       files: [],
     },
@@ -97,9 +96,7 @@ export default function page() {
     { label: "New Assistant", isCurrentPage: true },
   ];
 
-  const handleFormSubmit = async (
-    formData: z.infer<typeof createAssistantSchema>
-  ) => {
+  const handleFormSubmit = async (formData: CreateAssistantInput) => {
     if (uploadedFiles.length > 0) {
       // Upload files to Supabase
       const fileUrls = await uploadFiles(uploadedFiles);

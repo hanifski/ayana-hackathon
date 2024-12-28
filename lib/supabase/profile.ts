@@ -1,46 +1,21 @@
 "use client";
 
-import supabase from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/supabase-client";
 import { Profile } from "@/interfaces/profile";
 
+const supabase = createClient();
+
 export function profileService() {
-  const create = async (uuid: string) => {
+  const getProfile = async (userId: string) => {
     try {
       const { data: profile, error } = await supabase
-        .from("profile")
-        .insert([{ id: uuid }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      return {
-        success: true,
-        data: profile,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "An error occurred while creating profile",
-      };
-    }
-  };
-
-  const get = async (userId: string) => {
-    try {
-      const { data: profile, error } = await supabase
-        .from("profile")
+        .from("profiles")
         .select("*")
-        .eq("id", userId)
+        .eq("user_id", userId)
         .single();
-
       if (error) {
         throw error;
       }
-
       return {
         success: true,
         data: profile,
@@ -88,8 +63,7 @@ export function profileService() {
   };
 
   return {
-    create,
-    get,
+    getProfile,
     update,
   };
 }

@@ -2,24 +2,18 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useAuth } from "@/hooks/use-auth2";
 
 export default function LogoutPage() {
   const router = useRouter();
-  const supabase = createClientComponentClient();
 
   useEffect(() => {
-    const signOut = async () => {
-      try {
-        await supabase.auth.signOut();
-        router.push("/auth");
-      } catch (error) {
-        console.error("Error signing out:", error);
-      }
+    const logout = async () => {
+      await useAuth().logout();
+      router.push("/auth");
     };
-
-    signOut();
-  }, [router, supabase.auth]);
+    logout();
+  }, []);
 
   return (
     <div className="flex h-screen w-full items-center justify-center">

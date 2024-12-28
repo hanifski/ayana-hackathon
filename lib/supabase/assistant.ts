@@ -1,7 +1,9 @@
 "use client";
 
 import { Assistant } from "@/interfaces/assistant";
-import supabase from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/supabase-client";
+
+const supabase = createClient();
 
 export function assistantService() {
   const create = async (

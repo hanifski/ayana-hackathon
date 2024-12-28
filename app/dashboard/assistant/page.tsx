@@ -19,19 +19,6 @@ export default function AssistantPage() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    async function fetchAssistants() {
-      const { success, data, error } = await assistantService().getAll();
-      if (data) {
-        setAssistants(data);
-      } else {
-        toast.error(error);
-      }
-      setIsLoading(false);
-    }
-    fetchAssistants();
-  }, []);
-
   const filteredAssistants = assistants.filter((assistant) =>
     assistant.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -40,6 +27,21 @@ export default function AssistantPage() {
     { href: "/dashboard", label: "Dashboard" },
     { label: "Assistants", isCurrentPage: true },
   ];
+
+  const { getAll } = assistantService();
+
+  useEffect(() => {
+    async function fetchAssistants() {
+      const assistants = await getAll();
+      if (assistants.data) {
+        setAssistants(assistants.data);
+        return;
+      } else {
+        toast.error(assistants.error);
+      }
+    }
+    fetchAssistants().finally(() => setIsLoading(false));
+  }, []);
 
   return (
     <>
@@ -53,7 +55,7 @@ export default function AssistantPage() {
           New Assistant
         </Button>
       </DashboardHeader>
-      <div className="container">
+      <div className="container p-4">
         <div className="flex flex-col space-y-6 max-w-3xl mx-auto">
           <div className="flex flex-col gap-4 items-center justify-between">
             <div className="w-full sm:w-[300px]"></div>

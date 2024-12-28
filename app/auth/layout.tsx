@@ -1,14 +1,11 @@
 "use client";
 
-import { ThemeToggle } from "@/components/theme-toggle";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
-export default function AuthLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+import { ThemeToggle } from "@/components/theme-toggle";
+
+export default function AuthLayout({ children }: any) {
   const pathname = usePathname();
   const isLoginPage = pathname === "/auth";
 
