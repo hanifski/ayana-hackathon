@@ -29,8 +29,9 @@ export async function _getCurrentUser() {
 
   if (error) {
     console.log(error);
+    return { data: null, error: error };
   }
-  return data;
+  return { data: data.user, error: null };
 }
 
 export async function _signUpWithEmail(input: SignUpInput) {

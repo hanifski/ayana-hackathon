@@ -49,7 +49,7 @@ export default function AssistantPage() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => router.push("/dashboard/chat/new")}
+          onClick={() => router.push("/dashboard/assistant/create")}
         >
           <Plus className="mr-2 h-4 w-4" />
           New Assistant

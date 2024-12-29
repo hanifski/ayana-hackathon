@@ -6,7 +6,7 @@ const supabase = createClient();
 
 interface UploadResponse {
   success: boolean;
-  data?: string[];
+  data?: { url: string; type: string; filename: string }[];
   error?: string;
 }
 
@@ -15,28 +15,39 @@ export function uploadService() {
     try {
       const uploadPromises = files.map(async (file) => {
         const fileExt = file.name.split(".").pop();
-        const fileName = `${Math.random()}.${fileExt}`;
+        const fileName = `${Math.random()
+          .toString(36)
+          .substring(2)}.${fileExt}`;
         const filePath = `${fileName}`;
         const bucketName = "etalas-ai";
 
+        // Upload file with metadata
         const { data, error } = await supabase.storage
           .from(bucketName)
-          .upload(filePath, file);
+          .upload(filePath, file, {
+            cacheControl: "3600",
+            upsert: false,
+            contentType: file.type, // Specify file type
+          });
 
         if (error) throw error;
 
-        const {
-          data: { publicUrl },
-        } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+        // Get public URL
+        const { data: publicUrlData } = supabase.storage
+          .from(bucketName)
+          .getPublicUrl(filePath);
 
-        return publicUrl;
+        const publicUrl = publicUrlData.publicUrl;
+
+        // Return file URL, type, and original filename
+        return { url: publicUrl, type: file.type, filename: file.name };
       });
 
-      const urls = await Promise.all(uploadPromises);
+      const results = await Promise.all(uploadPromises);
 
       return {
         success: true,
-        data: urls,
+        data: results,
       };
     } catch (error) {
       return {
@@ -49,31 +60,5 @@ export function uploadService() {
     }
   };
 
-  const deleteFile = async (
-    path: string,
-    bucketName: string
-  ): Promise<{ success: boolean; error?: string }> => {
-    try {
-      const { error } = await supabase.storage.from(bucketName).remove([path]);
-
-      if (error) throw error;
-
-      return {
-        success: true,
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "An error occurred while deleting file",
-      };
-    }
-  };
-
-  return {
-    uploadFiles,
-    deleteFile,
-  };
+  return { uploadFiles };
 }

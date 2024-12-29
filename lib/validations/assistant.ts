@@ -32,7 +32,7 @@ export const createAssistantSchema = z.object({
     .optional(),
 });
 
-export type CreateAssistantForm = z.infer<typeof createAssistantSchema>;
+export type CreateAssistantInput = z.infer<typeof createAssistantSchema>;
 
 export interface FileUpload {
   name: string;

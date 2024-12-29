@@ -30,11 +30,11 @@ export default function SignUpPage() {
   });
 
   const handleSignUp = async (input: SignUpInput) => {
-    const response = await signUp(input);
-    if (response && response.user) {
+    const signUpResult = await signUp(input);
+    if (signUpResult && signUpResult.user) {
       await insert({
         name: form.getValues("name"),
-        user_id: response.user.id,
+        user_id: signUpResult.user.id,
       });
       router.push("/dashboard");
     }

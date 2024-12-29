@@ -6,6 +6,7 @@ export interface FileUpload {
 
 export interface VectorCreate {
   name: string;
+  file_ids: string[];
 }
 
 export interface VectorUpdate {

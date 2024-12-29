@@ -2,19 +2,16 @@
 
 import { createClient } from "./client-server";
 
-// Initialize Supabase client
-
 type FilterOperator =
-  | "eq" // '=' (equal to)
-  | "neq" // '!=' (not equal to)
-  | "gt" // '>' (greater than)
-  | "gte" // '>=' (greater than or equal to)
-  | "lt" // '<' (less than) less than
-  | "lte" // '<=' (less than or equal to)
-  | "like" // 'like' (case-sensitive)
-  | "ilike" // 'like' (case-insensitive)
-  | "is"; // 'is' (used for null checks)
-
+  | "eq"
+  | "neq"
+  | "gt"
+  | "gte"
+  | "lt"
+  | "lte"
+  | "like"
+  | "ilike"
+  | "is";
 type OrderDirection = "asc" | "desc";
 
 export interface QueryOptions {
@@ -22,6 +19,14 @@ export interface QueryOptions {
   sort?: { column: string; direction: OrderDirection };
   limit?: number;
   offset?: number;
+}
+
+export interface UpdateOptions {
+  where: { column: string; value: any }[];
+}
+
+export interface DeleteOptions {
+  where: { column: string; value: any }[];
 }
 
 export async function fetchData<T>(
@@ -56,43 +61,67 @@ export async function fetchData<T>(
 
   const { data, error } = await query;
 
-  return { data, error };
+  if (error) {
+    return { data: null, error };
+  }
+
+  return { data, error: null };
 }
 
 export async function insertData<T>(
   table: string,
   data: Partial<T>
-): Promise<{ data: T | null; error: Error | null }> {
+): Promise<T> {
   const supabase = await createClient();
   const { data: insertedData, error } = await supabase
     .from(table)
     .insert(data)
+    .select("*")
     .single();
 
-  return { data: insertedData, error };
+  if (error) {
+    throw error;
+  }
+  return insertedData;
 }
 
 export async function updateData<T>(
   table: string,
-  id: number | string,
-  data: Partial<T>
-): Promise<{ data: T | null; error: Error | null }> {
+  data: Partial<T>,
+  options: UpdateOptions
+): Promise<T> {
   const supabase = await createClient();
-  const { data: updatedData, error } = await supabase
-    .from(table)
-    .update(data)
-    .eq("id", id)
-    .single();
+  let query = supabase.from(table).update(data);
 
-  return { data: updatedData, error };
+  // Apply all where conditions
+  options.where.forEach(({ column, value }) => {
+    query = query.eq(column, value);
+  });
+
+  const { data: updatedData, error } = await query.single();
+
+  if (error) {
+    throw error;
+  }
+
+  return updatedData;
 }
 
 export async function deleteData(
   table: string,
-  id: number | string
-): Promise<{ success: boolean; error: Error | null }> {
+  options: DeleteOptions
+): Promise<void> {
   const supabase = await createClient();
-  const { error } = await supabase.from(table).delete().eq("id", id);
+  let query = supabase.from(table).delete();
 
-  return { success: !error, error };
+  // Apply all where conditions
+  options.where.forEach(({ column, value }) => {
+    query = query.eq(column, value);
+  });
+
+  const { error } = await query;
+
+  if (error) {
+    throw error;
+  }
 }

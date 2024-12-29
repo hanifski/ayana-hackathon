@@ -11,9 +11,9 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY as string });
 export async function _createVectorStore(input: VectorCreate) {
   const output = await openai.beta.vectorStores.create({
     name: input.name,
+    file_ids: input.file_ids,
   });
 
-  if (error) throw error;
   return output.id;
 }
 

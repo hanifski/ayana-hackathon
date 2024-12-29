@@ -2,13 +2,15 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
+import { useSupabase } from "@/hooks/use-supabase";
 import { cn } from "@/lib/utils";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createAssistantSchema } from "@/lib/validations/assistant";
-
-import { CreateAssistantInput } from "@/lib/validations/assistant2";
+import {
+  createAssistantSchema,
+  CreateAssistantInput,
+} from "@/lib/validations/assistant";
 
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -17,15 +19,6 @@ import { DashboardHeader } from "@/components/ui/dashboard-header";
 import { Upload } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 
 import {
   Select,
@@ -39,8 +32,9 @@ import { useOpenAI } from "@/hooks/use-openai";
 
 export default function page() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-
+  const { insert } = useSupabase<any>("assistants");
   const { uploadFiles } = uploadService();
   const {
     uploadToOpenAI,
@@ -49,7 +43,14 @@ export default function page() {
     createAssistant,
   } = useOpenAI();
 
-  const form = useForm<CreateAssistantInput>({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    getValues,
+    register,
+  } = useForm<CreateAssistantInput>({
     resolver: zodResolver(createAssistantSchema),
     defaultValues: {
       name: "",
@@ -66,7 +67,7 @@ export default function page() {
       setUploadedFiles(acceptedFiles);
 
       // Update form with file metadata
-      form.setValue(
+      setValue(
         "files",
         acceptedFiles.map((file) => ({
           name: file.name,
@@ -75,7 +76,7 @@ export default function page() {
         }))
       );
     },
-    [form]
+    [setValue]
   );
 
   // Set up dropzone
@@ -97,40 +98,53 @@ export default function page() {
   ];
 
   const handleFormSubmit = async (formData: CreateAssistantInput) => {
-    if (uploadedFiles.length > 0) {
-      // Upload files to Supabase
-      const fileUrls = await uploadFiles(uploadedFiles);
-      // Upload files to OpenAI
-      let fileIds: string[] = [];
-      if (fileUrls.success && fileUrls.data) {
-        // Loop through fileUrls and then upload to OpenAI
-        fileUrls.data?.forEach(async (fileUrl) => {
-          const fileId = await uploadToOpenAI({
-            file_url: fileUrl,
-            file_name: fileUrl,
-            file_type: "application/pdf",
-          });
-          if (fileId) {
-            console.log("fileId", fileId);
-            fileIds.push(fileId);
+    setLoading(true);
+    try {
+      if (uploadedFiles.length > 0) {
+        // Upload files to Supabase
+        const fileUrls = await uploadFiles(uploadedFiles);
+        console.log("File successfully uploaded to OpenAI", fileUrls);
+        // Upload files to OpenAI
+        let fileIds: string[] = [];
+        if (fileUrls.success && fileUrls.data) {
+          // Loop through fileUrls and then upload to OpenAI
+          for (const fileUrl of fileUrls.data) {
+            const fileId = await uploadToOpenAI({
+              file_url: fileUrl.url,
+              file_name: fileUrl.filename,
+              file_type: fileUrl.type,
+            });
+            if (fileId) {
+              console.log("fileId", fileId);
+              fileIds.push(fileId);
+            }
           }
-        });
-        // Create vector store
-        const vectorId = await createVectorStore({ name: formData.name });
-        // Add files to vector store
-        if (vectorId) {
-          await updateVectorStore({
-            vector_store_id: vectorId,
+          // Create vector store
+          const vectorId = await createVectorStore({
+            name: formData.name,
             file_ids: fileIds,
           });
-          // Create assistant with vector store
-          const assistant = await createAssistant({
-            name: formData.name,
-            vector_store_id: vectorId,
-            instructions: formData.instructions,
-          });
+          console.log("Vector is successfully created", vectorId);
+          // Add files to vector store
+          if (vectorId) {
+            // Create assistant with vector store
+            const assistant = await createAssistant({
+              name: formData.name,
+              model: formData.model,
+              vector_store_id: vectorId,
+              instructions: formData.instructions,
+            });
+            console.log("Assistant is successfully created", assistant);
+          }
         }
       }
+      // Handle successful creation (e.g., show a success message, redirect)
+      // router.push("/dashboard/assistant");
+    } catch (error) {
+      console.error("Error creating assistant:", error);
+      // Handle error (e.g., show an error message)
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -150,10 +164,9 @@ export default function page() {
   return (
     <>
       <DashboardHeader breadcrumbs={breadcrumbs} />
-
       <div className="container max-w-2xl px-4 pt-4 pb-20 mx-auto">
         <div className="flex flex-col gap-4">
-          <div>
+          <div className="flex flex-col gap-1.5">
             <h1 className="text-2xl font-semibold tracking-tight">
               Create New Assistant
             </h1>
@@ -163,197 +176,188 @@ export default function page() {
             </p>
           </div>
 
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleFormSubmit)}
-              className="space-y-6 pt-6"
-            >
-              <FormField
-                control={form.control}
+          <form
+            onSubmit={handleSubmit(handleFormSubmit)}
+            className="space-y-6 pt-6"
+          >
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm">Assistant Name</label>
+              <Controller
                 name="name"
+                control={control}
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Assistant Name</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter a name for your assistant"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      This is how you'll identify your assistant.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
+                  <Input
+                    {...field}
+                    placeholder="Enter a name for your assistant"
+                  />
                 )}
               />
+              {errors.name && (
+                <p className="text-red-500">{errors.name.message}</p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                This is how you'll identify your assistant.
+              </p>
+            </div>
 
-              <FormField
-                control={form.control}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm">Model</label>
+              <Controller
                 name="model"
+                control={control}
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Model</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a model" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="gpt-4-turbo-preview">
-                          GPT-4 Turbo
-                        </SelectItem>
-                        <SelectItem value="gpt-3.5-turbo">
-                          GPT-3.5 Turbo
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      Select the AI model that powers your assistant.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a model" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="gpt-4-turbo-preview">
+                        GPT-4 Turbo
+                      </SelectItem>
+                      <SelectItem value="gpt-3.5-turbo">
+                        GPT-3.5 Turbo
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 )}
               />
+              {errors.model && (
+                <p className="text-red-500">{errors.model.message}</p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Select the AI model that powers your assistant.
+              </p>
+            </div>
 
-              <FormField
-                control={form.control}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm">Instructions</label>
+
+              <Controller
                 name="instructions"
+                control={control}
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Instructions</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Enter detailed instructions for your assistant..."
-                        className="min-h-[150px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Provide clear instructions about how the assistant should
-                      behave and respond.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
+                  <Textarea
+                    {...field}
+                    placeholder="Enter detailed instructions for your assistant..."
+                    className="min-h-[150px]"
+                  />
                 )}
               />
+              {errors.instructions && (
+                <p className="text-red-500">{errors.instructions.message}</p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Provide clear instructions about how the assistant should behave
+                and respond.
+              </p>
+            </div>
 
-              <FormField
-                control={form.control}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm">
+                Temperature: {getValues("temperature")}
+              </label>
+
+              <Controller
                 name="temperature"
+                control={control}
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Temperature: {field.value}</FormLabel>
-                    <FormControl>
-                      <Slider
-                        min={0}
-                        max={1}
-                        step={0.1}
-                        value={[field.value]}
-                        onValueChange={(vals) => field.onChange(vals[0])}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Adjust creativity level (0 = more focused, 1 = more
-                      creative)
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
+                  <Slider
+                    min={0}
+                    max={1}
+                    step={0.1}
+                    value={[field.value]}
+                    onValueChange={(vals) => field.onChange(vals[0])}
+                  />
                 )}
               />
+              {errors.temperature && (
+                <p className="text-red-500">{errors.temperature.message}</p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Adjust creativity level (0 = more focused, 1 = more creative)
+              </p>
+            </div>
 
-              <FormField
-                control={form.control}
-                name="files"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Upload Files (Optional)</FormLabel>
-                    <FormControl>
-                      <div
-                        {...getRootProps()}
-                        className={cn(
-                          "border-2 border-dashed rounded-lg px-6 py-10 cursor-pointer",
-                          "hover:border-primary/50 transition-colors",
-                          isDragActive && "border-primary bg-primary/5"
-                        )}
-                      >
-                        <input {...getInputProps()} />
-                        <div className="flex flex-col items-center gap-2 text-center">
-                          <Upload className="h-4 w-4 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground">
-                            Drag & drop or click to select files
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            PDF, TXT, MD, JSON (Max 20MB)
-                          </p>
-                        </div>
-                      </div>
-                    </FormControl>
-                    {uploadedFiles.length > 0 && (
-                      <div className="mt-4 space-y-2">
-                        {uploadedFiles.map((file) => (
-                          <div
-                            key={file.name}
-                            className="flex items-center justify-between p-2 bg-muted rounded-md"
-                          >
-                            <a
-                              href={getFilePreviewUrl(file)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm truncate text-primary hover:underline"
-                            >
-                              {file.name}
-                            </a>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                URL.revokeObjectURL(getFilePreviewUrl(file));
-                                setUploadedFiles(
-                                  uploadedFiles.filter((f) => f !== file)
-                                );
-                                const currentFiles =
-                                  form.getValues("files") || [];
-                                form.setValue(
-                                  "files",
-                                  currentFiles.filter(
-                                    (f) => f.name !== file.name
-                                  )
-                                );
-                              }}
-                            >
-                              Remove
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <FormDescription>
-                      Upload files to train your assistant with custom
-                      knowledge.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm">Upload Files (optional)</label>
+
+              <div
+                {...getRootProps()}
+                className={cn(
+                  "border-2 border-dashed rounded-lg px-6 py-10 cursor-pointer",
+                  "hover:border-primary/50 transition-colors",
+                  isDragActive && "border-primary bg-primary/5"
                 )}
-              />
-
-              <div className="flex gap-4 mt-4 justify-end">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => router.back()}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">Create Assistant</Button>
+              >
+                <input {...getInputProps()} />
+                <div className="flex flex-col items-center gap-2 text-center">
+                  <Upload className="h-4 w-4 text-muted-foreground" />
+                  <p className="text-sm">
+                    Drag & drop or click to select files
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    pdf, txt, md, json (max 20mb)
+                  </p>
+                </div>
               </div>
-            </form>
-          </Form>
+              <p className="text-xs text-muted-foreground">
+                Upload files to train your assistant with custom knowledge.
+              </p>
+              {errors.files && (
+                <p className="text-red-500">{errors.files.message}</p>
+              )}
+              {uploadedFiles.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  {uploadedFiles.map((file) => (
+                    <div
+                      key={file.name}
+                      className="flex items-center justify-between p-2 bg-muted rounded-md"
+                    >
+                      <a
+                        href={getFilePreviewUrl(file)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm truncate text-primary hover:underline"
+                      >
+                        {file.name}
+                      </a>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          URL.revokeObjectURL(getFilePreviewUrl(file));
+                          setUploadedFiles(
+                            uploadedFiles.filter((f) => f !== file)
+                          );
+                          const currentFiles = getValues("files") || [];
+                          setValue(
+                            "files",
+                            currentFiles.filter((f) => f.name !== file.name)
+                          );
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="flex gap-4 mt-4 justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Saving.." : "Save"}
+              </Button>
+            </div>
+          </form>
         </div>
       </div>
     </>

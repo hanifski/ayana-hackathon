@@ -1,15 +1,16 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { profileService } from "@/lib/supabase/profile";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useSupabase } from "@/hooks/use-supabase";
 import { Profile } from "@/types/supabase";
+import { toast } from "sonner";
 
 // Define the shape of our user data
 interface UserData {
   id: string;
+  profile_id: string;
   email: string;
   name: string;
   avatar_url: string;
@@ -17,7 +18,7 @@ interface UserData {
 }
 
 // Define what our context will provide
-interface UserContextType {
+interface UserContextInterface {
   user: UserData | null;
   isLoading: boolean;
   updateUser: (newData: Partial<UserData>) => void;
@@ -25,45 +26,46 @@ interface UserContextType {
 }
 
 // Create the context
-const UserContext = createContext<UserContextType | undefined>(undefined);
+const UserContext = createContext<UserContextInterface | undefined>(undefined);
 
 // Create the provider component
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<UserData | null>(null);
   const { getCurrentUser } = useAuth();
-  const { data: myProfile } = useSupabase<Profile>("profiles");
+  const { getList: getProfiles } = useSupabase<Profile>("profiles");
 
-  console.log("myProfile", myProfile?.[0].name);
-
-  // Function to fetch user data
-  const fetchUser = async () => {
-    setIsLoading(true);
-    try {
-      const userData = await getCurrentUser();
-      if (userData && userData.user) {
-        const newUserData: UserData = {
-          id: userData.user.id,
-          email: userData.user.email || "",
-          name: myProfile?.[0].name || "",
-          avatar_url: "",
-          active_workspace: "",
-        };
-        setUser(newUserData);
-      } else {
-        setUser(null);
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      setUser(null);
-    }
-    setIsLoading(false);
-  };
-
-  // Fetch user data when the component mounts
   useEffect(() => {
     fetchUser();
   }, []);
+
+  useEffect(() => {
+    console.log(user);
+  }, [user]);
+
+  const fetchUser = async () => {
+    setIsLoading(true);
+    setUser(null);
+    // Fetch the current user
+    const userResult = await getCurrentUser();
+    if (userResult) {
+      // Fetch the user profile (returns as an array)
+      const profileResult = await getProfiles();
+      if (userResult.data && profileResult && profileResult.data) {
+        // Get the first item from the array
+        const userProfile = profileResult.data[0];
+        setUser({
+          id: userResult.data.id || "",
+          profile_id: userProfile.id || "",
+          email: userResult.data.email || "",
+          name: userProfile.name || "",
+          avatar_url: userProfile.avatar_url || "",
+          active_workspace: userProfile.active_workspace || "",
+        });
+      }
+    }
+    setIsLoading(false);
+  };
 
   // Function to update user data
   const updateUser = (newData: Partial<UserData>) => {
@@ -81,7 +83,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Create the context value
-  const contextValue: UserContextType = {
+  const contextValue: UserContextInterface = {
     user,
     isLoading,
     updateUser,
