@@ -6,10 +6,10 @@ export interface Message {
   createdAt: Date;
 }
 
-export interface ChatModel {
-  id: string;
-  name: string;
-  description: string;
+export interface ModelInterface {
+  value: string;
+  label: string;
+  description?: string;
   provider: "openai" | "anthropic";
 }
 
@@ -22,5 +22,5 @@ export interface ChatState {
 export interface ChatProvider {
   id: string;
   name: string;
-  models: ChatModel[];
+  models: ModelInterface[];
 }

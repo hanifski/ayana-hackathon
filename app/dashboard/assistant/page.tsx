@@ -1,23 +1,28 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Assistant } from "@/interfaces/assistant";
+import { useRouter } from "next/navigation";
+import { useSupabase } from "@/hooks/use-supabase";
+import { useUser } from "@/providers/user-provider";
+
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DashboardHeader } from "@/components/ui/dashboard-header";
 import { Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+
 import Link from "next/link";
-import { assistantService } from "@/lib/supabase/assistant";
+
+import { Assistant } from "@/types/supabase";
 
 export default function AssistantPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const { user } = useUser();
+  const { getList } = useSupabase<Assistant>("assistants");
 
   const filteredAssistants = assistants.filter((assistant) =>
     assistant.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -28,19 +33,22 @@ export default function AssistantPage() {
     { label: "Assistants", isCurrentPage: true },
   ];
 
-  const { getAll } = assistantService();
-
   useEffect(() => {
-    async function fetchAssistants() {
-      const assistants = await getAll();
-      if (assistants.data) {
-        setAssistants(assistants.data);
-        return;
-      } else {
-        toast.error(assistants.error);
+    const fetchAssistants = async () => {
+      setIsLoading(true);
+      try {
+        const assistantResults = await getList();
+        if (assistantResults && assistantResults.data) {
+          setAssistants(assistantResults?.data);
+        }
+      } catch (error) {
+        console.error("Error fetching assistants:", error);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    fetchAssistants().finally(() => setIsLoading(false));
+    };
+
+    fetchAssistants();
   }, []);
 
   return (
@@ -96,17 +104,15 @@ export default function AssistantPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col h-fit">
-                        <h2 className="text-sm font-medium">
-                          {assistant.name}
-                        </h2>
-                        <p className="text-xs text-muted-foreground">
+                        <h2 className="font-medium">{assistant.name}</h2>
+                        <p className="text-sm text-muted-foreground">
                           {assistant.model}
                         </p>
                       </div>
                     </CardHeader>
                     <CardContent className="flex gap-3">
-                      <p className="text-xs text-muted-foreground">
-                        {assistant.instructions}
+                      <p className="text-sm text-muted-foreground">
+                        {assistant.description}
                       </p>
                     </CardContent>
                   </Card>

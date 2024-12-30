@@ -1,11 +1,29 @@
 import { z } from "zod";
+import { ModelInterface } from "@/interfaces/chat";
 
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
-const ACCEPTED_FILE_TYPES = [
-  "application/pdf",
-  "text/plain",
-  "text/markdown",
-  "application/json",
+export const FILE_CONFIG = {
+  maxSize: 20 * 1024 * 1024,
+  accept: {
+    "application/pdf": [".pdf"],
+    "text/plain": [".txt"],
+    "text/markdown": [".md"],
+    "application/json": [".json"],
+  },
+  acceptedTypes: [
+    "application/pdf",
+    "text/plain",
+    "text/markdown",
+    "application/json",
+  ],
+};
+
+export const AVAILABLE_MODELS: ModelInterface[] = [
+  {
+    value: "gpt-4-turbo-preview",
+    label: "GPT-4 Turbo",
+    provider: "openai",
+  },
+  { value: "gpt-3.5-turbo", label: "GPT-3.5 Turbo", provider: "openai" },
 ];
 
 export const createAssistantSchema = z.object({
@@ -23,10 +41,12 @@ export const createAssistantSchema = z.object({
     .array(
       z.object({
         name: z.string(),
-        size: z.number().max(MAX_FILE_SIZE, "Max file size is 20MB"),
-        type: z.string().refine((val) => ACCEPTED_FILE_TYPES.includes(val), {
-          message: "Invalid file type. Supported: PDF, TXT, MD, JSON",
-        }),
+        size: z.number().max(FILE_CONFIG.maxSize, "Max file size is 20MB"),
+        type: z
+          .string()
+          .refine((val) => FILE_CONFIG.acceptedTypes.includes(val), {
+            message: "Invalid file type. Supported: PDF, TXT, MD, JSON",
+          }),
       })
     )
     .optional(),

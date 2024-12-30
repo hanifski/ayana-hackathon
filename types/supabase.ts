@@ -6,12 +6,21 @@ export type Profile = {
   avatar_url: string | null;
 };
 
+export type File = {
+  file_url: string;
+  file_name: string;
+  file_type: string;
+};
+
 export type Assistant = {
-  id: string;
+  id?: string;
   name: string;
   model: string;
   description: string;
-  created_at: number;
+  temperature: number;
+  files: File[];
   file_ids: string[];
+  vector_store_id: string;
+  user_id: string;
   workspace_id: string;
 };

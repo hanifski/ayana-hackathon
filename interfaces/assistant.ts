@@ -1,6 +1,8 @@
-export interface Assistant {
+import { ModelInterface } from "./chat";
+
+export interface Assistantx {
   id: string;
-  name: string;
+  name: ModelInterface;
   model: string;
   instructions: string;
   description?: string;

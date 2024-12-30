@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSearchParams } from "next/navigation";
-import { Assistant } from "@/interfaces/assistant";
+import { Assistant } from "@/types/supabase";
 
 const breadcrumbs = [
   { label: "Dashboard", href: "/dashboard" },
