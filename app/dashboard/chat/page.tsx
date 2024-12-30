@@ -15,7 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSearchParams } from "next/navigation";
 import { Assistant } from "@/types/supabase";
 
 const breadcrumbs = [
@@ -24,8 +23,7 @@ const breadcrumbs = [
 ];
 
 export default function ChatPage() {
-  const searchParams = useSearchParams();
-  const assistantId = searchParams.get("assistant");
+  const [assistantId, setAssistantId] = useState<string | null>(null);
   const [assistant, setAssistant] = useState<Assistant | null>(null);
   const [selectedModel, setSelectedModel] = useState("claude-3-haiku-20240307");
   const { messages, input, handleInputChange, handleSubmit, isLoading } =
@@ -37,7 +35,7 @@ export default function ChatPage() {
     });
 
   useEffect(() => {
-    // Fetch assistant details if assistantId is present
+    // Fetch assistant details if assistantId exists
     if (assistantId) {
       fetch(`/api/assistants/${assistantId}`)
         .then((res) => res.json())
