@@ -21,7 +21,7 @@ export default function SettingPage() {
     const { update } = useSupabase<any>("profiles");
     const router = useRouter();
     
-
+ 
     // Form
     const form = useForm<profileInput>({
         resolver: zodResolver(profileSchema),
@@ -33,7 +33,7 @@ export default function SettingPage() {
         timeZone: "UTC",
         bio: "",
         },
-    });
+    }); 
 
     const handleSaveProfile = async () => {
       /*  try {
@@ -70,14 +70,14 @@ export default function SettingPage() {
             {/* Form */}
             <div className="space-y-8">
               {/* Name */}
-              <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
-                <div className="w-full sm:w-1/3">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="w-full">
                   <Label className="text-base font-medium">Name</Label>
                   <p className="text-sm text-muted-foreground mt-1">
                     This is your public display name.
                   </p>
                 </div>
-                <div className="w-full sm:w-2/3 grid grid-cols-2 gap-4">
+
                 <Input
                     {...form.register("name")}
                     type="text"
@@ -85,19 +85,113 @@ export default function SettingPage() {
                     disabled={loading}
                     className="h-12"/>
 
-                
                 {form.formState.errors.name && (
                 <p className="text-sm text-destructive mt-1">
                 {form.formState.errors.name.message}
                 </p>
                 )}
+                </div>
 
+                {/* email */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="w-full">
+                  <Label className="text-base font-medium">Email</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    This is your email.
+                  </p>
                 </div>
+                
+                <Input
+                    {...form.register("email")}
+                    type="text"
+                    placeholder="example@gmail.com"
+                    disabled={loading}
+                    className="h-12"/>
+
+                {form.formState.errors.email && (
+                <p className="text-sm text-destructive mt-1">
+                {form.formState.errors.email.message}
+                </p>
+                )}
                 </div>
+
+                {/* role */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="w-full">
+                  <Label className="text-base font-medium">Role</Label>
                 </div>
+                
+                <Input
+                    {...form.register("role")}
+                    type="text"
+                    placeholder="web developer"
+                    disabled={loading}
+                    className="h-12"/>
+
+                {form.formState.errors.role && (
+                <p className="text-sm text-destructive mt-1">
+                {form.formState.errors.role.message}
+                </p>
+                )}
                 </div>
+
+                {/* country */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="w-full">
+                    <Label className="text-base font-medium">Country</Label>
+                </div>
+
+                <select
+                    {...form.register("country")}
+                    disabled={loading}
+                    className="h-12 w-full border rounded-md pl-2 pr-2"
+                >
+                    <option value="" disabled>Select your country</option>
+                    <option value="usa">United States</option>
+                    <option value="canada">Canada</option>
+                    <option value="uk">United Kingdom</option>
+                    <option value="australia">Australia</option>
+                    {/* Add more countries as needed */}
+                </select>
+
+                {form.formState.errors.country && (
+                    <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.country.message}
+                    </p>
+                )}
+                </div>
+
+                {/* timezone */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="w-full">
+                    <Label className="text-base font-medium">Timezone</Label>
+                </div>
+
+                <select
+                    {...form.register("timeZone")}
+                    disabled={loading}
+                    className="h-12 w-full border rounded-md pl-2 pr-2"
+                >
+                    <option value="" disabled>Select your timezone</option>
+                    <option value="utc">UTC</option>
+                    <option value="gmt">GMT</option>
+                    <option value="est">EST</option>
+                    <option value="cst">CST</option>
+                    <option value="pst">PST</option>
+                    {/* Add more countries as needed */}
+                </select>
+
+                {form.formState.errors.timeZone && (
+                    <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.timeZone.message}
+                    </p>
+                )}
+                </div>
+
+                        </div>
+                    </div>
                 </div>
               </form>
-              </div>
+            </div>
         );
     }
