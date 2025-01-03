@@ -5,7 +5,7 @@ import * as z from "zod";
 export const profileSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
   email: z.string().email("Please enter a valid email address"),
-  role: z.string().nonempty("I am a product designer"),
+  role: z.string().nonempty("role is required"),
   country: z.enum([
     "USA", 
     "Canada", 

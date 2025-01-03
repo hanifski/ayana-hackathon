@@ -36,22 +36,21 @@ export default function SettingPage() {
     }); 
 
     const handleSaveProfile = async () => {
-      /*  try {
+        try {
           const userId = "userId"; // Replace with actual user ID retrieval logic
           const profileData: Partial<profileInput> = {
-            firstName: form.getValues("firstName"),
-            lastName: form.getValues("lastName"),
+            name: form.getValues("name"),
             email: form.getValues("email"),
             role: form.getValues("role"),
             country: form.getValues("country"),
             timeZone: form.getValues("timeZone"),
             bio: form.getValues("bio"),
-          });
+          };
+
           router.push("/dashboard");
         } catch (error) {
-            console.error(“Error creating assistant:“, error);}
-      };
-      */
+            console.error("Error updating profile:", error instanceof Error ? error.message : "Unknown error"); // Use correct quotes and error message
+        }
     }
     
   return (
@@ -70,49 +69,44 @@ export default function SettingPage() {
             {/* Form */}
             <div className="space-y-8">
               {/* Name */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="w-full">
+              <div className="bg-slate-500 flex flex-col sm:flex-row gap-4">
+                <div className="bg-yellow-300 w-full">
                   <Label className="text-base font-medium">Name</Label>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    This is your public display name.
-                  </p>
                 </div>
+                    <div className="bg-purple-400 w-full flex flex-col">
+                    <Input
+                        {...form.register("name")}
+                        type="text"
+                        placeholder="Full Name"
+                        disabled={loading}
+                        className="h-12"/>
 
-                <Input
-                    {...form.register("name")}
-                    type="text"
-                    placeholder="Full Name"
-                    disabled={loading}
-                    className="h-12"/>
-
-                {form.formState.errors.name && (
-                <p className="text-sm text-destructive mt-1">
-                {form.formState.errors.name.message}
-                </p>
-                )}
+                    {form.formState.errors.name && (
+                    <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.name.message}
+                    </p>
+                    )}
+                    </div>
                 </div>
-
                 {/* email */}
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row">
                 <div className="w-full">
                   <Label className="text-base font-medium">Email</Label>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    This is your email.
-                  </p>
                 </div>
-                
-                <Input
-                    {...form.register("email")}
-                    type="text"
-                    placeholder="example@gmail.com"
-                    disabled={loading}
-                    className="h-12"/>
+                    <div className="w-full flex flex-col" >
+                    <Input
+                        {...form.register("email")}
+                        type="text"
+                        placeholder="example@gmail.com"
+                        disabled={loading}
+                        className="h-12"/>
 
-                {form.formState.errors.email && (
-                <p className="text-sm text-destructive mt-1">
-                {form.formState.errors.email.message}
-                </p>
-                )}
+                    {form.formState.errors.email && (
+                    <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.email.message}
+                    </p>
+                    )}
+                    </div>
                 </div>
 
                 {/* role */}
@@ -120,19 +114,20 @@ export default function SettingPage() {
                 <div className="w-full">
                   <Label className="text-base font-medium">Role</Label>
                 </div>
-                
-                <Input
-                    {...form.register("role")}
-                    type="text"
-                    placeholder="web developer"
-                    disabled={loading}
-                    className="h-12"/>
+                    <div className="w-full flex flex-col">
+                    <Input
+                        {...form.register("role")}
+                        type="text"
+                        placeholder="web developer"
+                        disabled={loading}
+                        className="h-12"/>
 
-                {form.formState.errors.role && (
-                <p className="text-sm text-destructive mt-1">
-                {form.formState.errors.role.message}
-                </p>
-                )}
+                    {form.formState.errors.role && (
+                    <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.role.message}
+                    </p>
+                    )}
+                    </div>
                 </div>
 
                 {/* country */}
@@ -140,7 +135,7 @@ export default function SettingPage() {
                 <div className="w-full">
                     <Label className="text-base font-medium">Country</Label>
                 </div>
-
+                <div className="w-full flex flex-col">
                 <select
                     {...form.register("country")}
                     disabled={loading}
@@ -159,6 +154,7 @@ export default function SettingPage() {
                     {form.formState.errors.country.message}
                     </p>
                 )}
+                    </div>
                 </div>
 
                 {/* timezone */}
@@ -166,7 +162,7 @@ export default function SettingPage() {
                 <div className="w-full">
                     <Label className="text-base font-medium">Timezone</Label>
                 </div>
-
+                <div className="w-full flex flex-col">
                 <select
                     {...form.register("timeZone")}
                     disabled={loading}
@@ -186,6 +182,35 @@ export default function SettingPage() {
                     {form.formState.errors.timeZone.message}
                     </p>
                 )}
+                    </div>
+                </div>
+
+                {/* bio */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="w-full">
+                  <Label className="text-base font-medium">Bio</Label>
+                </div>
+                <div className="w-full flex flex-col">
+                <Input
+                    {...form.register("bio")}
+                    type="text"
+                    placeholder="i am a product designer for last 5 year"
+                    disabled={loading}
+                    className="h-12"/>
+
+                {form.formState.errors.bio && (
+                <p className="text-sm text-destructive mt-1">
+                {form.formState.errors.bio.message}
+                </p>
+                )}
+                    </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex justify-end">
+                <Button type="submit" disabled={loading} className="mt-4">
+                    Submit
+                </Button>
                 </div>
 
                         </div>
