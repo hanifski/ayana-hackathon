@@ -26,6 +26,11 @@ export const AVAILABLE_MODELS: ModelInterface[] = [
   { value: "gpt-3.5-turbo", label: "GPT-3.5 Turbo", provider: "openai" },
 ];
 
+// Custom Zod type for File objects
+const FileSchema = z.custom<File>((file) => {
+  return file instanceof File;
+}, "Must be a File object");
+
 export const createAssistantSchema = z.object({
   name: z.string().min(2, {
     message: "Assistant name must be at least 2 characters.",
@@ -39,24 +44,9 @@ export const createAssistantSchema = z.object({
   temperature: z.number().min(0).max(1),
   files: z
     .array(
-      z.object({
-        name: z.string(),
-        size: z.number().max(FILE_CONFIG.maxSize, "Max file size is 20MB"),
-        type: z
-          .string()
-          .refine((val) => FILE_CONFIG.acceptedTypes.includes(val), {
-            message: "Invalid file type. Supported: PDF, TXT, MD, JSON",
-          }),
-      })
+      FileSchema
     )
     .optional(),
 });
 
 export type CreateAssistantInput = z.infer<typeof createAssistantSchema>;
-
-export interface FileUpload {
-  name: string;
-  size: number;
-  type: string;
-  url?: string;
-}

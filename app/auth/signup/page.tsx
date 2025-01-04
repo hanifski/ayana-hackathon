@@ -17,6 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 export default function SignUpPage() {
   const { signUp, loading } = useAuth();
   const { insert } = useSupabase<any>("profiles");
+
   const router = useRouter();
 
   // Form

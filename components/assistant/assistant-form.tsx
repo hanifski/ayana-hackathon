@@ -1,16 +1,12 @@
 "use client";
 
-// Hooks
 import { useState, useCallback, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { cn } from "@/lib/utils";
-
-// Components
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-
 import { X } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import {
@@ -20,8 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-// Validations
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   createAssistantSchema,
@@ -36,7 +30,6 @@ interface AssistantFormProps {
 
 export default function AssistantForm({ onSubmit }: AssistantFormProps) {
   const [loading, setLoading] = useState(false);
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const {
     control,
@@ -44,7 +37,7 @@ export default function AssistantForm({ onSubmit }: AssistantFormProps) {
     formState: { errors },
     setValue,
     getValues,
-    register,
+    watch,
   } = useForm<CreateAssistantInput>({
     resolver: zodResolver(createAssistantSchema),
     defaultValues: {
@@ -56,31 +49,31 @@ export default function AssistantForm({ onSubmit }: AssistantFormProps) {
     },
   });
 
-  // Handle file upload
+  const files = watch("files") || [];
+
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      setUploadedFiles(acceptedFiles);
-      // Update form with file metadata
-      setValue(
-        "files",
-        acceptedFiles.map((file) => ({
-          name: file.name,
-          size: file.size,
-          type: file.type,
-        }))
-      );
+      const newFiles = acceptedFiles.map((file) => file);
+
+      setValue("files", [...(files || []), ...newFiles]);
     },
-    [setValue]
+    [setValue, files]
   );
 
-  // Set up dropzone
+  const removeFile = (index: number) => {
+    const currentFiles = getValues("files") || [];
+    setValue(
+      "files",
+      currentFiles.filter((_, i) => i !== index)
+    );
+  };
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: FILE_CONFIG.accept,
     maxSize: FILE_CONFIG.maxSize,
   });
 
-  // Handle form submission
   const handleCreateAssistant = async (formData: CreateAssistantInput) => {
     setLoading(true);
     try {
@@ -92,25 +85,15 @@ export default function AssistantForm({ onSubmit }: AssistantFormProps) {
     }
   };
 
-  // Get preview URL for uploaded files
   const getFilePreviewUrl = (file: File) => {
     return URL.createObjectURL(file);
   };
 
-  // Cleanup for object URLs during unmount
-  useEffect(() => {
-    return () => {
-      uploadedFiles.forEach((file) => {
-        URL.revokeObjectURL(getFilePreviewUrl(file));
-      });
-    };
-  }, [uploadedFiles]);
-
   return (
-    <>
+    <div>
       <form
         onSubmit={handleSubmit(handleCreateAssistant)}
-        className="flex flex-col gap-6 h-full"
+        className="flex flex-col gap-8 h-full"
       >
         <div className="flex justify-between items-center h-fit border-b border-border py-3 px-5">
           <p className="text-xl font-semibold">Create Assistant</p>
@@ -124,7 +107,7 @@ export default function AssistantForm({ onSubmit }: AssistantFormProps) {
             </Button>
           </div>
         </div>
-        <div className="flex h-full px-5">
+        <div className="flex h-full px-8">
           <div className="flex w-full gap-8">
             {" "}
             {/* Instructions */}
@@ -245,22 +228,30 @@ export default function AssistantForm({ onSubmit }: AssistantFormProps) {
                 {errors.files && (
                   <p className="text-red-500">{errors.files.message}</p>
                 )}
-                {uploadedFiles.length > 0 && (
+
+                {files.length > 0 && (
                   <div className="flex flex-col gap-2">
-                    {uploadedFiles.map((file) => (
+                    {files.map((fileObj, index) => (
                       <div
-                        key={file.name}
+                        key={fileObj.name}
                         className="flex items-center justify-between px-3 py-1.5 bg-muted rounded-md"
                       >
                         <a
-                          href={getFilePreviewUrl(file)}
+                          href={getFilePreviewUrl(fileObj)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs font-mono truncate text-primary hover:underline"
                         >
-                          {file.name}
+                          {fileObj.name}
                         </a>
-                        <X height={16} width={16} />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeFile(index)}
+                        >
+                          <X height={16} width={16} />
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -270,6 +261,6 @@ export default function AssistantForm({ onSubmit }: AssistantFormProps) {
           </div>
         </div>
       </form>
-    </>
+    </div>
   );
 }
