@@ -1,7 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useOpenAI } from "@/hooks/use-openai";
 import { useSupabase } from "@/hooks/use-supabase";
 import { useUser } from "@/providers/user-provider";
@@ -9,7 +7,7 @@ import { useUser } from "@/providers/user-provider";
 import AssistantForm from "@/components/assistant/assistant-form";
 
 import { uploadService } from "@/lib/supabase/upload";
-import { Assistant } from "@/types/supabase";
+
 import { CreateAssistantInput } from "@/lib/validations/assistant";
 
 import { toast } from "sonner";
@@ -21,8 +19,8 @@ export default function CreateAssistantPage() {
   const { user } = useUser();
 
   const breadcrumbs = [
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/dashboard/assistant", label: "Assistants" },
+    { href: "/d", label: "Dashboard" },
+    { href: "/d/assistant", label: "Assistants" },
     { label: "New Assistant", isCurrentPage: true },
   ];
 
