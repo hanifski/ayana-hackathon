@@ -106,7 +106,7 @@ export function WorkspaceModal({ onClose }: CreateWorkspaceModalProps) {
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              Get started
+              Get startedd
             </Button>
           </div>
         </form>
