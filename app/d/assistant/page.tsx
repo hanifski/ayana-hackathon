@@ -29,7 +29,7 @@ export default function AssistantPage() {
   );
 
   const breadcrumbs = [
-    { href: "/dashboard", label: "Dashboard" },
+    { href: "/d", label: "Dashboard" },
     { label: "Assistants", isCurrentPage: true },
   ];
 
@@ -93,7 +93,7 @@ export default function AssistantPage() {
               {filteredAssistants.map((assistant) => (
                 <Link
                   key={assistant.id}
-                  href={`/dashboard/chat?assistant=${assistant.id}`}
+                  href={`/d/chat?assistant=${assistant.id}`}
                   className="block"
                 >
                   <Card className="hover:shadow-lg transition-shadow cursor-pointer">

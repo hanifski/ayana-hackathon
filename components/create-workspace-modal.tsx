@@ -1,7 +1,7 @@
 "use client";
 
 // React
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useUser } from "@/providers/user-provider";
 import { useSupabase } from "@/hooks/use-supabase";
@@ -12,7 +12,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,

@@ -18,8 +18,8 @@ import {
 import { Assistant } from "@/types/supabase";
 
 const breadcrumbs = [
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Chat", href: "/dashboard/chat" },
+  { label: "Dashboard", href: "/d" },
+  { label: "Chat", href: "/d/chat" },
 ];
 
 export default function ChatPage() {
