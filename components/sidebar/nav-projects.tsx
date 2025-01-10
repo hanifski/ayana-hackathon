@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import {
   Folder,
   Forward,
@@ -7,7 +8,7 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react";
-
+import { Plus } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +25,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { NewProjectModal } from "../chat/create-project-modal";
 
 export function NavProjects({
   projects,
@@ -31,21 +33,28 @@ export function NavProjects({
   projects: {
     name: string;
     url: string;
-    icon: LucideIcon;
   }[];
 }) {
   const { isMobile } = useSidebar();
+  const [isNewProjectModalOpen, setNewProjectModalOpen] = useState(false);
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>Projects</SidebarGroupLabel>
       <SidebarMenu>
+        <SidebarMenuItem onClick={() => setNewProjectModalOpen(true)}>
+          <SidebarMenuButton asChild>
+            <div>
+              <Plus className=" h-4 w-4" />
+              <p>New Project</p>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
         {projects.map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
               <a href={item.url}>
-                <item.icon />
-                <span>{item.name}</span>
+                <span className="font-normal">{item.name}</span>
               </a>
             </SidebarMenuButton>
             <DropdownMenu>
@@ -78,12 +87,16 @@ export function NavProjects({
           </SidebarMenuItem>
         ))}
         <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <MoreHorizontal className="text-sidebar-foreground/70" />
+          {/* <SidebarMenuButton className="text-sidebar-foreground/70">
             <span>More</span>
-          </SidebarMenuButton>
+          </SidebarMenuButton> */}
         </SidebarMenuItem>
       </SidebarMenu>
+
+      <NewProjectModal
+        isOpen={isNewProjectModalOpen}
+        onClose={() => setNewProjectModalOpen(false)}
+      />
     </SidebarGroup>
   );
 }

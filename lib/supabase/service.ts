@@ -11,7 +11,9 @@ type FilterOperator =
   | "lte"
   | "like"
   | "ilike"
-  | "is";
+  | "is"
+  | "in";
+
 type OrderDirection = "asc" | "desc";
 
 export interface QueryOptions {
@@ -38,7 +40,11 @@ export async function fetchData<T>(
 
   // Apply filters
   options.filters?.forEach((filter) => {
-    query = query.filter(filter.column, filter.operator, filter.value);
+    if (filter.operator === "in") {
+      query = query.in(filter.column, filter.value);
+    } else {
+      query = query.filter(filter.column, filter.operator, filter.value);
+    }
   });
 
   // Apply sorting

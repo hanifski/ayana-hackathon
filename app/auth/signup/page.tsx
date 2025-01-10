@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/use-auth";
 import { useSupabase } from "@/hooks/use-supabase";
+import { useUser } from "@/providers/user-provider";
 
 // Components
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 // Validations
 import { signUpSchema, SignUpInput } from "@/lib/validations/auth";
@@ -37,7 +39,9 @@ export default function SignUpPage() {
         name: form.getValues("name"),
         user_id: signUpResult.user.id,
       });
-      router.push("/dashboard");
+      router.push("/d");
+    } else {
+      toast.error("Sign up failed, please try again.");
     }
   };
 

@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 
 //Validation
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,9 +26,12 @@ import { WorkspaceInput, workspaceSchema } from "@/lib/validations/workspace";
 import { Workspace, Member } from "@/interfaces/workspace";
 import { Profile } from "@/types/supabase";
 
-export function WorkspaceChecker() {
+interface CreateWorkspaceModalProps {
+  onClose: () => void;
+}
+
+export function WorkspaceModal({ onClose }: CreateWorkspaceModalProps) {
   const [loading, setLoading] = useState(false);
-  const [openDialog, setOpenDialog] = useState(false);
   const { user, refetchUser } = useUser();
   const { update: updateProfile } = useSupabase<Profile>("profiles");
   const { insert: createWorkspace } = useSupabase<Workspace>("workspaces");
@@ -42,14 +44,9 @@ export function WorkspaceChecker() {
     },
   });
 
-  useEffect(() => {
-    if (user && user.active_workspace === "") {
-      setOpenDialog(true);
-    }
-  }, [user]);
-
   const handleCreateWorkspace = async (data: WorkspaceInput) => {
     setLoading(true);
+    console.log(user);
     // Create the workspace
     const workspaceResult = await createWorkspace({
       name: data.name,
@@ -73,22 +70,20 @@ export function WorkspaceChecker() {
         refetchUser();
       }
     }
-
     form.reset();
     setLoading(false);
-    setOpenDialog(false);
+    onClose();
   };
 
   return (
-    <Dialog open={openDialog}>
-      <DialogTrigger asChild></DialogTrigger>
+    <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] [&>button]:hidden">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Let’s Get Started! 🎉</DialogTitle>
-          <DialogDescription className="text-base">
-            Your first workspace is just a click away.
-          </DialogDescription>
+          <DialogTitle className="text-xl">Create Workspace 🎉</DialogTitle>
         </DialogHeader>
+        <DialogDescription>
+          Create a new workspace to get started with your project.
+        </DialogDescription>
         <form
           onSubmit={form.handleSubmit(handleCreateWorkspace)}
           className="flex flex-col gap-4"
@@ -107,6 +102,9 @@ export function WorkspaceChecker() {
             )}
           </div>
           <div className="flex justify-end">
+            <Button type="button" onClick={onClose} variant="outline">
+              Cancel
+            </Button>
             <Button type="submit" disabled={loading}>
               Get started
             </Button>

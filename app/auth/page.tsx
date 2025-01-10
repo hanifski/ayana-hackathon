@@ -27,21 +27,11 @@ export default function AuthPage() {
   const handleLogin = async (data: LoginInput) => {
     const loginSuccess = await loginWithPassword(data);
     if (loginSuccess) {
-      router.push("/dashboard");
+      router.push("/d");
     } else {
       toast.error("Login failed, please try again.");
     }
   };
-
-  // const handleLogin = async (data: LoginInput) => {
-  //   const loginSuccess = await login(data);
-
-  //   if (loginSuccess) {
-  //     router.push("/dashboard");
-  //   } else {
-  //     toast.error("Login failed, please try again.");
-  //   }
-  // };
 
   return (
     <>

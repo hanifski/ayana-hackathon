@@ -10,16 +10,20 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-export function NavSecondary({
-  items,
-  ...props
-}: {
-  items: {
-    title: string;
-    url: string;
-    icon: LucideIcon;
-  }[];
-} & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+interface NavItem {
+  title: string;
+  url: string;
+  icon: LucideIcon;
+}
+
+// Define the props for NavSecondary
+interface NavSecondaryProps
+  extends React.ComponentPropsWithoutRef<typeof SidebarGroup> {
+  items: NavItem[];
+}
+
+// Component implementation
+export function NavSecondary({ items, ...props }: NavSecondaryProps) {
   const router = useRouter();
   return (
     <SidebarGroup {...props}>

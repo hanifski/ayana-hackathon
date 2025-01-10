@@ -41,12 +41,12 @@ export function useSupabase<T>(table: string) {
       setError(null);
       try {
         const data = await insertData<T>(table, newData);
-        return data;
+        return { data, error: false };
       } catch (err) {
         setError(
           err instanceof Error ? err : new Error("An unknown error occurred")
         );
-        return null;
+        return { data: null, error: true, message: err };
       } finally {
         setLoading(false);
       }

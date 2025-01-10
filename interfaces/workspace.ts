@@ -3,6 +3,7 @@ export interface Workspace {
   id: string;
   name: string;
   owner_id: string;
+  avatar: string;
 }
 
 export interface Member {

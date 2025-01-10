@@ -15,6 +15,7 @@ import {
 
 import { NavMain } from "@/components/sidebar/nav-main";
 import { NavConversations } from "@/components/sidebar/nav-conversations";
+import { NavProjects } from "@/components/sidebar/nav-projects";
 import { NavUser } from "@/components/sidebar/nav-user";
 import { TeamSwitcher } from "@/components/sidebar/team-switcher";
 import {
@@ -47,6 +48,13 @@ const data = {
       plan: "Free",
     },
   ],
+  projects: [
+    {
+      id: "1",
+      name: "Project Planning",
+      url: "/chat/project-planning",
+    },
+  ],
   conversations: [
     {
       id: "1",
@@ -73,12 +81,12 @@ const data = {
   navSecondary: [
     {
       title: "Chat",
-      url: "/dashboard/chat",
+      url: "/d/chat",
       icon: MessageSquare,
     },
     {
       title: "Assistant",
-      url: "/dashboard/assistant",
+      url: "/d/assistant",
       icon: BotMessageSquare,
     },
   ],
@@ -92,13 +100,14 @@ export function AppSidebar() {
       <SidebarHeader>
         <div className="p-2 text-lg font-semibold">
           {" "}
-          <h2>Etalas.ai</h2>
+          <h2 className="font-medium text-base text-teal-700">Etalas.ai</h2>
         </div>
 
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
         <NavSecondary items={data.navSecondary} />
+        <NavProjects projects={data.projects} />
         <NavConversations conversations={data.conversations} />
       </SidebarContent>
       <SidebarFooter>
