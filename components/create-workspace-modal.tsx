@@ -82,7 +82,7 @@ export function WorkspaceModal({ onClose }: CreateWorkspaceModalProps) {
           <DialogTitle className="text-xl">Create Workspace 🎉</DialogTitle>
         </DialogHeader>
         <DialogDescription>
-          Create a new workspace to get started with your project now.
+          Create a new workspace to get started with your project.
         </DialogDescription>
         <form
           onSubmit={form.handleSubmit(handleCreateWorkspace)}
