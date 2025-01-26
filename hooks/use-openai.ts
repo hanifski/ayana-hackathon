@@ -4,7 +4,7 @@ import { useState } from "react";
 
 // Server functions
 import { _createVectorStore, _updateVectorStore } from "@/lib/openai/vector";
-import { _createAssistant } from "@/lib/openai/assistant";
+import { _createAssistant, _updateAssistantInstruction } from "@/lib/openai/assistant";
 import { _uploadFile } from "@/lib/openai/file";
 
 // Interfaces
@@ -79,8 +79,24 @@ export function useOpenAI() {
     }
   };
 
+  const updateAssistantInstruction = async (input: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const output = await _updateAssistantInstruction(input);
+      return output;
+    } catch (error: any) {
+      setError(error instanceof Error ? error.message : "An error occurred");
+      toast.error(error.message || "Failed to update assistant instruction.");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     createAssistant,
+    updateAssistantInstruction,
     uploadToOpenAI,
     createVectorStore,
     updateVectorStore,

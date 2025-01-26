@@ -1,7 +1,7 @@
 import * as React from "react";
 import { type LucideIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -16,15 +16,14 @@ interface NavItem {
   icon: LucideIcon;
 }
 
-// Define the props for NavSecondary
 interface NavSecondaryProps
   extends React.ComponentPropsWithoutRef<typeof SidebarGroup> {
   items: NavItem[];
 }
 
-// Component implementation
 export function NavSecondary({ items, ...props }: NavSecondaryProps) {
-  const router = useRouter();
+  const pathname = usePathname();
+
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
@@ -32,10 +31,18 @@ export function NavSecondary({ items, ...props }: NavSecondaryProps) {
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild>
-                <div onClick={() => router.push(item.url)}>
-                  <item.icon />
+                <Link
+                  href={item.url}
+                  prefetch={true}
+                  className={`flex items-center gap-1.5 p-3 rounded-lg transition-colors ${
+                    pathname === item.url
+                      ? "bg-foreground text-background"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  <item.icon className="size-6" />
                   <span>{item.title}</span>
-                </div>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

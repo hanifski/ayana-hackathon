@@ -1,11 +1,10 @@
 "use client";
 
-// React & Next
+// React & Hooks
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { useAuth } from "@/hooks/use-auth";
-import { useSupabase } from "@/hooks/use-supabase";
-import { useUser } from "@/providers/user-provider";
+import { signUpWithEmail } from "@/lib/supabase/auth";
 
 // Components
 import { Input } from "@/components/ui/input";
@@ -17,12 +16,10 @@ import { signUpSchema, SignUpInput } from "@/lib/validations/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function SignUpPage() {
-  const { signUp, loading } = useAuth();
-  const { insert } = useSupabase<any>("profiles");
-
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
-  // Form
+  // Form state
   const form = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -32,16 +29,21 @@ export default function SignUpPage() {
     },
   });
 
+  // Function for handling sign up
   const handleSignUp = async (input: SignUpInput) => {
-    const signUpResult = await signUp(input);
-    if (signUpResult && signUpResult.user) {
-      await insert({
-        name: form.getValues("name"),
-        user_id: signUpResult.user.id,
-      });
-      router.push("/d");
-    } else {
-      toast.error("Sign up failed, please try again.");
+    // Loading starts
+    setLoading(true);
+    try {
+      // Sign user up
+      await signUpWithEmail(input);
+      // Redirect to dashboard
+      router.push("/d/chat");
+    } catch (err: any) {
+      // Show error toast
+      toast.error(err.message || "Sign up failed.");
+    } finally {
+      // Loading ends
+      setLoading(false);
     }
   };
 
@@ -54,41 +56,43 @@ export default function SignUpPage() {
           type="text"
           placeholder="Full Name"
           disabled={loading}
-          className="h-12"
+          className="h-12 md:text-base"
         />
         {form.formState.errors.name && (
           <p className="text-sm text-destructive mt-1">
             {form.formState.errors.name.message}
           </p>
         )}
-        <input
+        <Input
           {...form.register("email")}
           type="email"
-          className="flex h-12 w-full p-3 rounded-md border border-input box-border outline-transparent focus:outline-primary bg-background transition-all duration-200 placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
-          placeholder="Email"
+          placeholder="Full Name"
           disabled={loading}
+          className="h-12 md:text-base"
         />
         {form.formState.errors.email && (
           <p className="text-sm text-destructive mt-1">
             {form.formState.errors.email.message}
           </p>
         )}
-        <input
+        <Input
           {...form.register("password")}
           type="password"
-          className="flex h-12 w-full p-3 rounded-md border border-input box-border outline-transparent focus:outline-primary bg-background transition-all duration-200 placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
           placeholder="Password"
           disabled={loading}
+          className="h-12 md:text-base"
         />
+
         {form.formState.errors.password && (
           <p className="text-sm font-medium text-destructive mt-1">
             {form.formState.errors.password.message}
           </p>
         )}
         <Button
-          className="w-full h-12 text-base"
+          className="w-full h-12 md:text-lg"
           type="submit"
           disabled={loading}
+          loading={loading}
         >
           {loading ? "Get ready..." : "Register"}
         </Button>

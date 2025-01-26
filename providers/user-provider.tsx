@@ -39,10 +39,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     fetchUser();
   }, []);
 
-  useEffect(() => {
-    console.log({ user });
-  }, [user]);
-
   const fetchUser = async () => {
     setIsLoading(true);
     setUser(null);
@@ -52,7 +48,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       // Fetch the user profile (returns as an array)
       const profileResult = await getProfiles();
       if (userResult.data && profileResult && profileResult.data) {
-        console.log({ userResult, profileResult });
         // Get the first item from the array
         const userProfile = profileResult.data[0];
         setUser({

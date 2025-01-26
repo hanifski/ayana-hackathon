@@ -77,7 +77,7 @@ export async function fetchData<T>(
 export async function insertData<T>(
   table: string,
   data: Partial<T>
-): Promise<T> {
+): Promise<{ data: T | null; error: Error | null }> {
   const supabase = await createClient();
   const { data: insertedData, error } = await supabase
     .from(table)
@@ -86,16 +86,16 @@ export async function insertData<T>(
     .single();
 
   if (error) {
-    throw error;
+    return { data: null, error };
   }
-  return insertedData;
+  return { data: insertedData, error: null };
 }
 
 export async function updateData<T>(
   table: string,
   data: Partial<T>,
   options: UpdateOptions
-): Promise<T> {
+): Promise<{ data: T | null; error: Error | null }> {
   const supabase = await createClient();
   let query = supabase.from(table).update(data);
 
@@ -104,13 +104,13 @@ export async function updateData<T>(
     query = query.eq(column, value);
   });
 
-  const { data: updatedData, error } = await query.single();
+  const { data: updatedData, error } = await query.select().single();
 
   if (error) {
-    throw error;
+    return { data: null, error };
   }
 
-  return updatedData;
+  return { data: updatedData, error: null };
 }
 
 export async function deleteData(

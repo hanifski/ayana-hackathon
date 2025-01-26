@@ -10,7 +10,7 @@ import {
   UpdateOptions,
   DeleteOptions,
 } from "@/lib/supabase/service";
-import { toast } from "sonner";
+
 
 export function useSupabase<T>(table: string) {
   const [loading, setLoading] = useState(false);
@@ -40,13 +40,16 @@ export function useSupabase<T>(table: string) {
       setLoading(true);
       setError(null);
       try {
-        const data = await insertData<T>(table, newData);
-        return { data, error: false };
+        const result = await insertData<T>(table, newData);
+        if (result.error) {
+          setError(result.error);
+          return { data: null, error: result.error };
+        }
+        return { data: result.data, error: null };
       } catch (err) {
-        setError(
-          err instanceof Error ? err : new Error("An unknown error occurred")
-        );
-        return { data: null, error: true, message: err };
+        const error = err instanceof Error ? err : new Error("An unknown error occurred");
+        setError(error);
+        return { data: null, error };
       } finally {
         setLoading(false);
       }
@@ -59,14 +62,16 @@ export function useSupabase<T>(table: string) {
       setLoading(true);
       setError(null);
       try {
-        const updatedData = await updateData<T>(table, data, options);
-        return updatedData;
+        const result = await updateData<T>(table, data, options);
+        if (result.error) {
+          setError(result.error);
+          return { data: null, error: result.error };
+        }
+        return { data: result.data, error: null };
       } catch (err) {
-        setError(
-          err instanceof Error ? err : new Error("An unknown error occurred")
-        );
-        setLoading(false);
-        return null;
+        const error = err instanceof Error ? err : new Error("An unknown error occurred");
+        setError(error);
+        return { data: null, error };
       } finally {
         setLoading(false);
       }

@@ -1,14 +1,7 @@
-"use client";
-
-import { usePathname } from "next/navigation";
-import Link from "next/link";
-
+import AuthFooter from "./footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function AuthLayout({ children }: any) {
-  const pathname = usePathname();
-  const isLoginPage = pathname === "/auth";
-
   return (
     <>
       <div className="flex flex-col w-full h-screen ">
@@ -19,19 +12,7 @@ export default function AuthLayout({ children }: any) {
         <div className="flex flex-col w-full h-full px-4 md:px-6 items-center justify-center">
           {children}
         </div>
-        <footer className="flex h-28 w-full px-4 md:px-6 border-t border-border items-center justify-center gap-1">
-          <p className="text-muted-foreground">
-            {isLoginPage
-              ? "Don't have an account?"
-              : "Already have an account?"}
-          </p>
-          <Link
-            href={isLoginPage ? "/auth/signup" : "/auth"}
-            className="text-primary underline-offset-4 hover:underline"
-          >
-            {isLoginPage ? "Register" : "Log in"}
-          </Link>
-        </footer>
+        <AuthFooter />
       </div>
     </>
   );

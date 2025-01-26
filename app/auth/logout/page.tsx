@@ -2,17 +2,17 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/use-auth";
+import { logout } from "@/lib/supabase/auth";
 
 export default function LogoutPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const logout = async () => {
-      await useAuth().logout();
+    async function handleLogout() {
+      await logout();
       router.push("/auth");
-    };
-    logout();
+    }
+    handleLogout();
   }, []);
 
   return (

@@ -1,6 +1,7 @@
 "use client";
 
-import { useAuth } from "@/hooks/use-auth";
+import { logout } from "@/lib/supabase/auth";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   BadgeCheck,
@@ -39,7 +40,6 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
-  const { logout } = useAuth();
 
   const handleLogout = async () => {
     await logout();
@@ -96,8 +96,10 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <BadgeCheck />
-                Account
+                <Link href="/d/settings">
+                  <BadgeCheck />
+                  Account
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <CreditCard />

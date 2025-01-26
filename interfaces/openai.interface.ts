@@ -16,6 +16,8 @@ export interface VectorUpdate {
 
 export interface AssistantCreate {
   name: string;
+  model: string;
   instructions: string;
+  tools: { type: string }[];
   vector_store_id: string[];
 }

@@ -43,59 +43,66 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
   const [activeWorkspace, setActiveWorkspace] = useState<Workspace>(
     {} as Workspace
   );
+  const [showWorkspaceSwitcher, setShowWorkspaceSwitcher] = useState(false);
   const { getList: workspaces } = useSupabase<Workspace>("workspaces");
   const { getList: members } = useSupabase<Member>("members");
 
   useEffect(() => {
-    async function getAllWorkspaces() {
-      try {
-        const membersResult = await members();
-
-        let listOfIds: string[] = [];
-        if (membersResult && membersResult.data) {
-          const members = membersResult?.data;
-          let listOfIds = members.map((member: Member) => member.workspace_id);
-          console.log(listOfIds);
-        }
-
-        const workspaceResults = await workspaces({
-          filters: [
-            {
-              column: "id",
-              operator: "in",
-              value: listOfIds,
-            },
-          ],
-        });
-        if (workspaceResults && workspaceResults.data) {
-          setUserWorkspaces(workspaceResults.data);
-          if (user) {
-            const selectedWorkspace = userWorkspaces.find(
-              (workspace) => workspace.id === user.active_workspace
-            );
-            if (selectedWorkspace) {
-              setActiveWorkspace(selectedWorkspace);
-            }
-          }
-        }
-      } catch (error) {
-        toast.error("Error fetching workspaces");
-      }
-    }
+    if (!user) return;
     getAllWorkspaces();
-  }, [user, user?.active_workspace]);
+  }, [user]);
+
+  async function getAllWorkspaces() {
+    if (!user) return;
+    try {
+      // Get all this user's members
+      const membersResult = await members({
+        filters: [{ column: "user_id", operator: "eq", value: user.id }],
+      });
+      // Extract member ids
+      const listOfIds =
+        membersResult?.data?.map((member: Member) => member.workspace_id) || [];
+      // Get all workspaces that this user is a member of
+      const workspaceResults = await workspaces({
+        filters: [{ column: "id", operator: "in", value: listOfIds }],
+      });
+      // Set all workspaces to state
+      const workspacesData = workspaceResults?.data || [];
+      setUserWorkspaces(workspacesData);
+      // Get the active workspace
+      const selectedWorkspace = workspacesData.find(
+        (workspace) => workspace.id === user.active_workspace
+      );
+      // If the user has an active workspace, set the active workspace
+      if (selectedWorkspace) {
+        setActiveWorkspace(selectedWorkspace);
+      }
+    } catch (error) {
+      toast.error("Error fetching workspaces");
+    } finally {
+      setShowWorkspaceSwitcher(true);
+    }
+  }
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          {userWorkspaces.length > 1 && (
+          {showWorkspaceSwitcher && (
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"></div>
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarImage
+                    src={activeWorkspace.avatar}
+                    alt={activeWorkspace.name}
+                  />
+                  <AvatarFallback className="rounded-lg">
+                    {activeWorkspace.name?.[0]?.toUpperCase() ?? ""}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
                     {activeWorkspace.name}
@@ -106,7 +113,6 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
               </SidebarMenuButton>
             </DropdownMenuTrigger>
           )}
-
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
             align="start"

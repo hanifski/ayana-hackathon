@@ -56,6 +56,12 @@ export function WorkspaceChecker() {
       owner_id: user?.id,
     });
 
+    if (workspaceResult.error) {
+      toast.error(workspaceResult.error.message);
+      setLoading(false);
+      return;
+    }
+
     if (workspaceResult.data && user) {
       // Create the workspace member
       const memberResult = await createMember({
@@ -64,19 +70,39 @@ export function WorkspaceChecker() {
         status: "accepted",
         role: "owner",
       });
+
+      if (memberResult.error) {
+        toast.error(memberResult.error.message);
+        setLoading(false);
+        return;
+      }
+
       // Update the UserContext
-      if (memberResult) {
-        await updateProfile(
+      if (memberResult.data) {
+        const profileResult = await updateProfile(
           { active_workspace: workspaceResult.data.id },
           { where: [{ column: "user_id", value: user.id }] }
         );
+
+        if (profileResult.error) {
+          toast.error(profileResult.error.message);
+          setLoading(false);
+          return;
+        }
+
         refetchUser();
+        toast.success("Workspace created successfully!");
       }
     }
 
     form.reset();
     setLoading(false);
     setOpenDialog(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "");
+    form.setValue("name", formatted);
   };
 
   return (
@@ -96,9 +122,10 @@ export function WorkspaceChecker() {
           <div className="flex flex-col gap-2">
             <Label htmlFor="name">Workspace Name</Label>
             <Input
+              id="name"
               {...form.register("name")}
-              type="text"
-              className="col-span-3"
+              onChange={handleInputChange}
+              placeholder="my-awesome-workspace"
             />
             {form.formState.errors.name && (
               <p className="text-sm text-destructive mt-1">
