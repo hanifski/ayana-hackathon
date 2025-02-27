@@ -51,8 +51,8 @@ export async function signUpWithEmail(input: signUpInputs) {
   const supabase = await createClient();
   // Step 1: Sign up the user
   const { data: authData, error: authError } = await supabase.auth.signUp({
-    email: 'hilmi111@gmail.com',
-    password: '1232131pass%%%',
+    email: input.email,
+    password: input.password,
   });
   // Throw error if signup fails
   if (authError) throw authError;
@@ -62,7 +62,7 @@ export async function signUpWithEmail(input: signUpInputs) {
   const { error: profileError } = await supabase
     .from("profiles")
     .insert({
-      full_name: "Hilmi",
+      full_name: input.full_name,
       user: authData.user.id, // Link profile to the auth user
     });
   // Throw error if profile creation fails
