@@ -1,14 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  Folder,
-  Forward,
-  MoreHorizontal,
-  Trash2,
-  type LucideIcon,
-} from "lucide-react";
-import { Plus } from "lucide-react";
+import { useState } from "react";
+import Link from "next/link";
+
+// Components
+import { NewProjectModal } from "../chat/create-project-modal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,16 +21,16 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { NewProjectModal } from "../chat/create-project-modal";
+import { Folder, Forward, MoreHorizontal, Trash2, Plus } from "lucide-react";
 
-export function NavProjects({
-  projects,
-}: {
-  projects: {
-    name: string;
-    url: string;
-  }[];
-}) {
+// Validations
+import { Assistant } from "@/types/supabase";
+
+interface NavProjectsProps {
+  assistants: Assistant[];
+}
+
+export function NavProjects({ assistants }: NavProjectsProps) {
   const { isMobile } = useSidebar();
   const [isNewProjectModalOpen, setNewProjectModalOpen] = useState(false);
 
@@ -50,46 +46,51 @@ export function NavProjects({
             </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
-        {projects.map((item) => (
-          <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
-              <a href={item.url}>
-                <span className="font-normal">{item.name}</span>
-              </a>
-            </SidebarMenuButton>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuAction showOnHover>
-                  <MoreHorizontal />
-                  <span className="sr-only">More</span>
-                </SidebarMenuAction>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-48 rounded-lg"
-                side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
-              >
-                <DropdownMenuItem>
-                  <Folder className="text-muted-foreground" />
-                  <span>View Project</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Forward className="text-muted-foreground" />
-                  <span>Share Project</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <Trash2 className="text-muted-foreground" />
-                  <span>Delete Project</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        ))}
+        {assistants && (
+          <div className="max-h-80 overflow-auto">
+            {assistants.map((item) => (
+              <SidebarMenuItem key={item.id}>
+                <SidebarMenuButton asChild>
+                  <Link href={`/d/project/${item.id}`}>
+                    <span className="font-normal">{item.name}</span>
+                  </Link>
+                </SidebarMenuButton>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuAction showOnHover>
+                      <MoreHorizontal />
+                      <span className="sr-only">More</span>
+                    </SidebarMenuAction>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    className="w-48 rounded-lg"
+                    side={isMobile ? "bottom" : "right"}
+                    align={isMobile ? "end" : "start"}
+                  >
+                    <DropdownMenuItem>
+                      <Folder className="text-muted-foreground" />
+                      <span>View Project</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Forward className="text-muted-foreground" />
+                      <span>Share Project</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <Trash2 className="text-muted-foreground" />
+                      <span>Delete Project</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
+            ))}
+          </div>
+        )}
+
         <SidebarMenuItem>
-          {/* <SidebarMenuButton className="text-sidebar-foreground/70">
+          <SidebarMenuButton className="text-sidebar-foreground/70">
             <span>More</span>
-          </SidebarMenuButton> */}
+          </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
 

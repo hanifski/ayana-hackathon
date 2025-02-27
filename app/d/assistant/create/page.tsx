@@ -8,7 +8,7 @@ import AssistantForm from "@/components/assistant/assistant-form";
 
 import { uploadService } from "@/lib/supabase/upload";
 
-import { CreateAssistantInput } from "@/lib/validations/assistant";
+import { CreateAssistantInput } from "@/lib/validations/assistant-old";
 
 import { toast } from "sonner";
 

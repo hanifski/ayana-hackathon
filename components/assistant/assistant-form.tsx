@@ -22,7 +22,7 @@ import {
   CreateAssistantInput,
   FILE_CONFIG,
   AVAILABLE_MODELS,
-} from "@/lib/validations/assistant";
+} from "@/lib/validations/assistant-old";
 
 interface AssistantFormProps {
   onSubmit: (data: CreateAssistantInput) => Promise<void>;

@@ -1,11 +1,14 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
+import { getCurrentUser } from "@/lib/supabase/auth";
 import { useAuth } from "@/hooks/use-auth";
 import { useSupabase } from "@/hooks/use-supabase";
 import { Profile } from "@/types/supabase";
 import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client-browser";
 
 // Define the shape of our user data
 interface UserData {
@@ -32,35 +35,45 @@ const UserContext = createContext<UserContextInterface | undefined>(undefined);
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<UserData | null>(null);
-  const { getCurrentUser } = useAuth();
-  const { getList: getProfiles } = useSupabase<Profile>("profiles");
+
+  const router = useRouter();
 
   useEffect(() => {
     fetchUser();
   }, []);
 
   const fetchUser = async () => {
-    setIsLoading(true);
-    setUser(null);
-    // Fetch the current user
-    const userResult = await getCurrentUser();
-    if (userResult) {
-      // Fetch the user profile (returns as an array)
-      const profileResult = await getProfiles();
-      if (userResult.data && profileResult && profileResult.data) {
-        // Get the first item from the array
-        const userProfile = profileResult.data[0];
+    try {
+      setIsLoading(true);
+      const user = await getCurrentUser();
+      const supabase = await createClient();
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", user?.id)
+        .single();
+
+      if (profileError) {
+        toast.error(profileError.message);
+        return;
+      }
+
+      if (profileData) {
         setUser({
-          id: userResult.data.id || "",
-          profile_id: userProfile.id || "",
-          email: userResult.data.email || "",
-          name: userProfile.name || "",
-          avatar_url: userProfile.avatar_url || "",
-          active_workspace: userProfile.active_workspace || "",
+          id: user?.id || "",
+          profile_id: profileData.id,
+          email: user?.email || "",
+          name: profileData.name || "",
+          avatar_url: profileData.avatar_url || "",
+          active_workspace: profileData.active_workspace || "",
         });
       }
+    } catch (error) {
+      toast.error("Failed to fetch user.");
+      router.push("/auth");
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   // Function to update user data

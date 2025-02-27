@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useOpenAI } from "@/hooks/use-openai";
 import { useSupabase } from "@/hooks/use-supabase";
+import { createClient } from "@/lib/supabase/client-browser";
+import { updateAssistantInstruction } from "@/lib/openai/assistant";
+
+import { Assistant } from "@/types/supabase";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 
 interface InstructionModalProps {
-  project: any;
+  project: Assistant;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -24,14 +28,15 @@ export function InstructionModal({
   isOpen,
   onClose,
 }: InstructionModalProps) {
-  const { updateAssistantInstruction } = useOpenAI();
-  const { update: updateProject } = useSupabase<any>("projects");
+  // const { updateAssistantInstruction } = useOpenAI();
+  // const { update: updateProject } = useSupabase<any>("projects");
   const [loading, setLoading] = useState(false);
+  const supabase = createClient();
 
   // Form
   const form = useForm<any>({
     defaultValues: {
-      instruction: "",
+      instruction: project?.description || "",
     },
   });
 
@@ -44,7 +49,6 @@ export function InstructionModal({
     }
   }, [project]);
 
-  // To:
   const onSubmit = async (data: any) => {
     setLoading(true);
     try {
@@ -53,25 +57,22 @@ export function InstructionModal({
         assistant_id: project.assistant_id,
         instruction: data.instruction, // Use form data instead of getValues
       });
-
-      // Update project in Supabase
-      if (result) {
-        const updateResult = await updateProject(
-          {
-            instruction: data.instruction,
-          },
-          {
-            where: [{ column: "id", value: project.id }],
-          }
-        );
-
-        if (updateResult.error) {
-          throw new Error(updateResult.error.message);
-        }
-      }
-
       toast.success("Instruction updated successfully!");
       onClose();
+
+      // Update project
+      const { data: projectData, error: projectError } = await supabase
+        .from("assistants")
+        .update({
+          instruction: data.instruction,
+        })
+        .eq("id", project.id)
+        .select();
+
+      if (projectError) {
+        toast.error("Failed to update project.");
+        console.error("Error updating project:", projectError);
+      }
     } catch (error) {
       toast.error("Failed to update instruction.");
       console.error("Error updating instruction:", error);
@@ -82,16 +83,16 @@ export function InstructionModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl [&>button]:hidden">
+      <DialogContent className="sm:max-w-lg [&>button]:hidden">
         <DialogHeader>
-          <DialogTitle>Edit Instruction</DialogTitle>
+          <DialogTitle className="text-2xl">Edit Instruction</DialogTitle>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="py-4">
+          <div className="mb-4">
             <Textarea
               {...form.register("instruction")}
               placeholder="Enter your instruction here..."
-              className="w-full h-32"
+              className="w-full h-32 text-base"
             />
           </div>
           <div className="flex justify-end space-x-2">

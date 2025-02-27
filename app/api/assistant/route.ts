@@ -18,6 +18,8 @@ export async function POST(req: Request) {
     content: input.message,
   })
 
+
+
   return AssistantResponse(
     { threadId, messageId: createdMessage.id },
     async ({ forwardStream }) => {

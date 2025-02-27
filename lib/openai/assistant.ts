@@ -1,27 +1,25 @@
 "use server";
 
 import OpenAI from "openai";
-import { AssistantCreate } from "@/interfaces/openai.interface";
+import { AssistantInput } from "../validations/assistant";
 
 // Initialize OpenAI
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY as string });
 
 // Function to create assistant to OpenAI
-// export async function _createAssistant(input: any) {
-//   const output = await openai.beta.assistants.create({
-//     model: input.model,
-//     name: input.name,
-//     instructions: input.instructions,
-//     tools: [{ type: "file_search" }],
-//     tool_resources: {
-//       file_search: {
-//         vector_store_ids: [input.vector_store_id],
-//       },
-//     },
-//   });
+export async function createAssistant(input: AssistantInput) {
+  try {
+    // Create assistant in OpenAI
+    const assistant = await openai.beta.assistants.create(input);
+    // Return assistant to client
+    return assistant.id;
+  } catch (error: any) {
+    // Throw error if creation fails
+    if (error instanceof Error) throw error;
+    throw new Error("Failed to create assistant");
+  }
+}
 
-//   return output.id;
-// }
 
 // Function to create assistant to OpenAI
 export async function _createAssistant(input: {
@@ -54,11 +52,10 @@ export async function _createAssistant(input: {
   return output.id;
 }
 
-export async function _updateAssistantInstruction(input: any) {
+export async function updateAssistantInstruction(input: any) {
   const output = await openai.beta.assistants.update(input.assistant_id, {
     instructions: input.instructions,
   });
-
   return output.description;
 }
 

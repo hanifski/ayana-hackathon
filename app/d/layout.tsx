@@ -1,9 +1,6 @@
-"use client";
-
 import React from "react";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { WorkspaceChecker } from "@/components/workspace-checker";
 
 export default function DashboardLayout({ children }: any) {
   return (
@@ -11,7 +8,7 @@ export default function DashboardLayout({ children }: any) {
       <AppSidebar />
       <SidebarInset>
         {" "}
-        <WorkspaceChecker />
+        {/* <Onboarding /> */}
         <main className="flex flex-1 flex-col">{children}</main>
       </SidebarInset>
     </SidebarProvider>

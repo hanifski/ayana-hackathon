@@ -24,7 +24,8 @@ import { toast } from "sonner";
 //Validation
 import { zodResolver } from "@hookform/resolvers/zod";
 import { WorkspaceInput, workspaceSchema } from "@/lib/validations/workspace";
-import { Workspace, Member } from "@/interfaces/workspace";
+
+import { Workspace, Member } from "@/types/supabase";
 import { Profile } from "@/types/supabase";
 
 interface CreateWorkspaceModalProps {

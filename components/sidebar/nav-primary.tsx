@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { type LucideIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -10,34 +12,51 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
+import { MessageSquare, BotMessageSquare } from "lucide-react";
+
 interface NavItem {
   title: string;
   url: string;
   icon: LucideIcon;
 }
 
-interface NavSecondaryProps
+interface NavPrimaryProps
   extends React.ComponentPropsWithoutRef<typeof SidebarGroup> {
-  items: NavItem[];
+  items?: NavItem[];
 }
 
-export function NavSecondary({ items, ...props }: NavSecondaryProps) {
+export function NavPrimary({ items, ...props }: NavPrimaryProps) {
   const pathname = usePathname();
+
+  const data = {
+    navList: [
+      {
+        title: "Chat",
+        url: "/d/chat",
+        icon: MessageSquare,
+      },
+      {
+        title: "Explore Agents",
+        url: "/d/agents",
+        icon: BotMessageSquare,
+      },
+    ],
+  };
 
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
-          {items.map((item) => (
+          {data.navList.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild>
                 <Link
                   href={item.url}
                   prefetch={true}
-                  className={`flex items-center gap-1.5 p-3 rounded-lg transition-colors ${
+                  className={`flex items-center px-3 py-1.5 h-fit rounded-lg hover:bg-neutral-200 transition-colors ${
                     pathname === item.url
-                      ? "bg-foreground text-background"
-                      : "text-gray-600 hover:bg-gray-100"
+                      ? "bg-neutral-200 bg-opacity-50 hover:bg-opacity-100 text-foreground"
+                      : "text-neutral-600"
                   }`}
                 >
                   <item.icon className="size-6" />

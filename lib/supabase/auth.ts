@@ -38,6 +38,15 @@ export async function _getCurrentUser() {
   return { data: data.user, error: null };
 }
 
+export async function getCurrentUser() {
+  const supabase = await createClient();
+
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError) throw userError;
+  return userData.user;
+}
+
 export async function signUpWithEmail(input: SignUpInput) {
   const supabase = await createClient();
 
@@ -61,5 +70,33 @@ export async function signUpWithEmail(input: SignUpInput) {
   // Throw error if profile creation fails
   if (profileError) throw profileError; 
   // Return the created user
+
+  // Step 3: Create the workspace
+  const { data: workspaceData, error: workspaceError } = await supabase
+    .from("workspaces")
+    .insert({
+      name: input.email,
+      owner_id: authData.user.id, // Link workspace to the auth user
+    })
+    .select()
+    .single();
+  // Throw error if workspace creation fails
+  if (workspaceError) throw workspaceError;
+  if (!workspaceData) throw new Error("Workspace creation failed unexpectedly.");
+
+  const { data: memberData, error: memberError } = await supabase
+    .from("members")
+    .insert({
+      workspace_id: workspaceData.id,
+      user_id: authData.user.id,
+      status: "accepted",
+      role: "owner",
+    })
+    .select()
+    .single();
+  // Throw error if member creation fails
+  if (memberError) throw memberError;
+  if (!memberData) throw new Error("Member creation failed unexpectedly.");
+
   return authData.user; 
 }

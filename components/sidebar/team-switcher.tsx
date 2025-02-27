@@ -23,7 +23,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Workspace, Member } from "@/interfaces/workspace";
+import { Workspace } from "@/types/supabase";
 
 interface Team {
   name: string;
@@ -39,50 +39,10 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
   const [showModal, setShowModal] = useState(false);
   const [userWorkspaces, setUserWorkspaces] = useState<Workspace[]>([]);
   const { isMobile } = useSidebar();
-  const { user } = useUser();
   const [activeWorkspace, setActiveWorkspace] = useState<Workspace>(
     {} as Workspace
   );
   const [showWorkspaceSwitcher, setShowWorkspaceSwitcher] = useState(false);
-  const { getList: workspaces } = useSupabase<Workspace>("workspaces");
-  const { getList: members } = useSupabase<Member>("members");
-
-  useEffect(() => {
-    if (!user) return;
-    getAllWorkspaces();
-  }, [user]);
-
-  async function getAllWorkspaces() {
-    if (!user) return;
-    try {
-      // Get all this user's members
-      const membersResult = await members({
-        filters: [{ column: "user_id", operator: "eq", value: user.id }],
-      });
-      // Extract member ids
-      const listOfIds =
-        membersResult?.data?.map((member: Member) => member.workspace_id) || [];
-      // Get all workspaces that this user is a member of
-      const workspaceResults = await workspaces({
-        filters: [{ column: "id", operator: "in", value: listOfIds }],
-      });
-      // Set all workspaces to state
-      const workspacesData = workspaceResults?.data || [];
-      setUserWorkspaces(workspacesData);
-      // Get the active workspace
-      const selectedWorkspace = workspacesData.find(
-        (workspace) => workspace.id === user.active_workspace
-      );
-      // If the user has an active workspace, set the active workspace
-      if (selectedWorkspace) {
-        setActiveWorkspace(selectedWorkspace);
-      }
-    } catch (error) {
-      toast.error("Error fetching workspaces");
-    } finally {
-      setShowWorkspaceSwitcher(true);
-    }
-  }
 
   return (
     <SidebarMenu>

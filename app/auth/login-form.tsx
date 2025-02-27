@@ -1,15 +1,21 @@
-// app/auth/LoginForm.tsx
 "use client";
 
+// React & Hooks
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+
+// Actions
 import { loginWithPassword } from "@/lib/supabase/auth";
+
+// Components
 import { toast } from "sonner";
 import { LoginInput, loginSchema } from "@/lib/validations/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+
+// Validations
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function LoginForm() {
   const [loading, setLoading] = useState(false);

@@ -1,4 +1,4 @@
-import AuthFooter from "./footer";
+import AuthFooter from "./auth-footer";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function AuthLayout({ children }: any) {

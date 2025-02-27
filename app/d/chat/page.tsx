@@ -1,7 +1,8 @@
 "use client";
 
-import { useChat } from "ai/react";
+import { useAssistant } from "ai/react";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { UserMessage } from "@/components/chat/user-message";
 import { AssistantMessage } from "@/components/chat/assistant-message";
 import { Button } from "@/components/ui/button";
@@ -23,16 +24,43 @@ const breadcrumbs = [
 ];
 
 export default function ChatPage() {
-  const [assistantId, setAssistantId] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const initialAssistantId = searchParams.get("assistant");
+  const initialMessage = searchParams.get("message");
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  const [assistantId, setAssistantId] = useState<string | null>(
+    initialAssistantId
+  );
   const [assistant, setAssistant] = useState<Assistant | null>(null);
   const [selectedModel, setSelectedModel] = useState("claude-3-haiku-20240307");
-  const { messages, input, handleInputChange, handleSubmit, isLoading } =
-    useChat({
-      api: "/api/chat",
+
+  const { status, messages, input, submitMessage, handleInputChange } =
+    useAssistant({
+      api: "/api/assistant",
       body: {
+        assistantId,
         model: selectedModel,
       },
     });
+
+  // Send initial message if exists
+  useEffect(() => {
+    if (
+      initialMessage &&
+      status === "awaiting_message" &&
+      messages.length < 2
+    ) {
+      handleInputChange({
+        target: { value: initialMessage },
+      } as React.ChangeEvent<HTMLTextAreaElement>);
+      const event = new Event(
+        "submit"
+      ) as unknown as React.FormEvent<HTMLFormElement>;
+      submitMessage(event);
+      setIsInitialLoad(true);
+    }
+  }, [initialMessage, status, submitMessage, handleInputChange]);
 
   useEffect(() => {
     // Fetch assistant details if assistantId exists
@@ -69,7 +97,7 @@ export default function ChatPage() {
 
       <div className="flex h-[calc(100vh-theme(spacing.16))] flex-col w-full">
         <ScrollArea className="flex-1 px-4">
-          <div className="mx-auto max-w-3xl space-y-4 pb-4">
+          <div className="mx-auto max-w-3xl space-y-4 pb-4 pt-8">
             {messages.map((message) => {
               const { id, content, role } = message;
               const messageProps = {
@@ -87,7 +115,7 @@ export default function ChatPage() {
                 <UserMessage key={id} {...messageProps} />
               );
             })}
-            {isLoading && (
+            {status === "in_progress" && (
               <div className="flex w-full items-center justify-center py-4">
                 <div className="text-sm text-muted-foreground">
                   AI is thinking...
@@ -100,7 +128,7 @@ export default function ChatPage() {
         <div className="px-4 pb-4">
           <div className="mx-auto max-w-3xl">
             <div className="border border-border rounded-lg focus-within:border-primary transition-all duration-300">
-              <form onSubmit={handleSubmit} className="flex flex-col">
+              <form onSubmit={submitMessage} className="flex flex-col">
                 <textarea
                   placeholder="Type your message..."
                   value={input}
@@ -110,7 +138,10 @@ export default function ChatPage() {
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
-                      handleSubmit(e);
+                      const event = new Event(
+                        "submit"
+                      ) as unknown as React.FormEvent<HTMLFormElement>;
+                      submitMessage(event);
                     }
                   }}
                 />
@@ -118,7 +149,12 @@ export default function ChatPage() {
                   <Button variant="outline" size="icon" className="size-8">
                     <Paperclip />
                   </Button>
-                  <Button type="submit" size="icon" className="size-8">
+                  <Button
+                    type="submit"
+                    size="icon"
+                    className="size-8"
+                    disabled={status !== "awaiting_message"}
+                  >
                     <ArrowUpRight />
                   </Button>
                 </div>
