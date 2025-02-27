@@ -1,0 +1,9 @@
+---
+description: Default Rules For this project
+globs: 
+---
+
+# Your rule content
+
+- use the shadcn component, if the component has not been installed, please install it first and then
+
