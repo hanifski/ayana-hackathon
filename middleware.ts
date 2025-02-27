@@ -5,7 +5,7 @@ export async function middleware(request: NextRequest) {
   // update user's auth session
   const user = await updateSession(request);
 
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+  if (!user && request.nextUrl.pathname.startsWith("/d")) {
     return NextResponse.redirect(new URL("/auth", request.url));
   }
 }

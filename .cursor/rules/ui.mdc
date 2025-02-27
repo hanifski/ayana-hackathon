@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+---
+
+# Your rule content
+
+- When need to create component please refer to existing ui first.
+- Prioritize shadcn over custom element.

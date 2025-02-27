@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+---
+React/Next.js
+
+- Use functional components and TypeScript interfaces.
+- Use function, not const, for components.
+- Use Zod for form validation.
+- Use interfaces over types
+- Use functional, declarative programming. Avoid classes.
+- Favor named exports for components.
+- Handle errors gracefully and return appropriate responses.

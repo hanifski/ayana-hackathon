@@ -1,10 +1,11 @@
 "use client";
 
 // React
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useUser } from "@/providers/user-provider";
 import { useSupabase } from "@/hooks/use-supabase";
+import { useOpenAI } from "@/hooks/use-openai";
 
 // Components
 import { Button } from "@/components/ui/button";
@@ -12,18 +13,19 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 //Validation
 import { zodResolver } from "@hookform/resolvers/zod";
 import { WorkspaceInput, workspaceSchema } from "@/lib/validations/workspace";
-import { Workspace, Member } from "@/interfaces/workspace";
+
+import { Workspace, Member } from "@/types/supabase";
 import { Profile } from "@/types/supabase";
 
 interface CreateWorkspaceModalProps {
@@ -53,26 +55,33 @@ export function WorkspaceModal({ onClose }: CreateWorkspaceModalProps) {
       owner_id: user?.id,
     });
 
-    if (workspaceResult.data && user) {
-      // Create the workspace member
-      const memberResult = await createMember({
-        workspace_id: workspaceResult.data.id,
-        user_id: user.id,
-        status: "accepted",
-        role: "owner",
-      });
-      // Update the UserContext
-      if (memberResult) {
-        await updateProfile(
-          { active_workspace: workspaceResult.data.id },
-          { where: [{ column: "user_id", value: user.id }] }
-        );
-        refetchUser();
-      }
+    if (workspaceResult.error) {
+      toast.error("Failed to create workspace.");
+      console.log(workspaceResult.error);
+      setLoading(false);
+      return;
     }
-    form.reset();
-    setLoading(false);
-    onClose();
+
+    // if (workspaceResult.data && user) {
+    //   // Create the workspace member
+    //   const memberResult = await createMember({
+    //     workspace_id: workspaceResult.data.id,
+    //     user_id: user.id,
+    //     status: "accepted",
+    //     role: "owner",
+    //   });
+    //   // Update the UserContext
+    //   if (memberResult) {
+    //     await updateProfile(
+    //       { active_workspace: workspaceResult.data.id },
+    //       { where: [{ column: "user_id", value: user.id }] }
+    //     );
+    //     refetchUser();
+    //   }
+    //   form.reset();
+    //   setLoading(false);
+    //   onClose();
+    // }
   };
 
   return (
@@ -106,7 +115,7 @@ export function WorkspaceModal({ onClose }: CreateWorkspaceModalProps) {
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              Get started
+              Get startedd
             </Button>
           </div>
         </form>

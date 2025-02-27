@@ -23,4 +23,28 @@ export type Assistant = {
   vector_store_id: string;
   user_id: string;
   workspace_id: string;
+  instruction: string;
+  assistant_id: string;
+};
+
+export type Workspace = {
+  id: string;
+  name: string;
+  owner_id: string;
+  avatar: string;
+};
+
+export type Member = {
+  
+}
+
+export type Project = {
+  id: string;
+  name: string;
+  description: string;
+  workspace_id: string;
+  owner_id: string;
+  avatar: string;
+  instruction: string;
+  assistant_id: string;
 };

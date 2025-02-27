@@ -23,7 +23,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Workspace, Member } from "@/interfaces/workspace";
+import { Workspace } from "@/types/supabase";
 
 interface Team {
   name: string;
@@ -39,63 +39,30 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
   const [showModal, setShowModal] = useState(false);
   const [userWorkspaces, setUserWorkspaces] = useState<Workspace[]>([]);
   const { isMobile } = useSidebar();
-  const { user } = useUser();
   const [activeWorkspace, setActiveWorkspace] = useState<Workspace>(
     {} as Workspace
   );
-  const { getList: workspaces } = useSupabase<Workspace>("workspaces");
-  const { getList: members } = useSupabase<Member>("members");
-
-  useEffect(() => {
-    async function getAllWorkspaces() {
-      try {
-        const membersResult = await members();
-
-        let listOfIds: string[] = [];
-        if (membersResult && membersResult.data) {
-          const members = membersResult?.data;
-          let listOfIds = members.map((member: Member) => member.workspace_id);
-          console.log(listOfIds);
-        }
-
-        const workspaceResults = await workspaces({
-          filters: [
-            {
-              column: "id",
-              operator: "in",
-              value: listOfIds,
-            },
-          ],
-        });
-        if (workspaceResults && workspaceResults.data) {
-          setUserWorkspaces(workspaceResults.data);
-          if (user) {
-            const selectedWorkspace = userWorkspaces.find(
-              (workspace) => workspace.id === user.active_workspace
-            );
-            if (selectedWorkspace) {
-              setActiveWorkspace(selectedWorkspace);
-            }
-          }
-        }
-      } catch (error) {
-        toast.error("Error fetching workspaces");
-      }
-    }
-    getAllWorkspaces();
-  }, [user, user?.active_workspace]);
+  const [showWorkspaceSwitcher, setShowWorkspaceSwitcher] = useState(false);
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          {userWorkspaces.length > 1 && (
+          {showWorkspaceSwitcher && (
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"></div>
+                <Avatar className="h-8 w-8 rounded-lg">
+                  <AvatarImage
+                    src={activeWorkspace.avatar}
+                    alt={activeWorkspace.name}
+                  />
+                  <AvatarFallback className="rounded-lg">
+                    {activeWorkspace.name?.[0]?.toUpperCase() ?? ""}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">
                     {activeWorkspace.name}
@@ -106,7 +73,6 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
               </SidebarMenuButton>
             </DropdownMenuTrigger>
           )}
-
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
             align="start"
