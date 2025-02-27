@@ -1,9 +1,5 @@
-import { Button } from "@/components/ui/button";
+import React from "react";
 
 export default function HomePage() {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p>Please go to /auth</p>
-    </div>
-  );
+  return <div>Hello World</div>;
 }

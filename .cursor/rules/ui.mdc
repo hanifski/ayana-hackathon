@@ -7,3 +7,12 @@ globs:
 
 - When need to create component please refer to existing ui first.
 - Prioritize shadcn over custom element.
+
+When creating an input:
+
+- Include a label.
+- Add a descriptive placeholder.
+- Use tooltips for required info.
+- Show errors with helper text below the input.
+
+
