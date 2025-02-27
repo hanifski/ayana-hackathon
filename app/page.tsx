@@ -7,13 +7,13 @@ export default function Home() {
   return (
     <main className="h-screen flex flex-col justify-between bg-background">
       {/* Header */}
-      <header className="p-12 flex justify-between items-center">
+      <header className="p-8 flex justify-between items-center">
         <h1 className="text-xl font-semibold text-foreground">Ayana Wedding</h1>
         <LanguageSelector />
       </header>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto p-12">
+      <div className="w-full h-full p-12 flex flex-col ">
         <div className="text-center mb-12">
           <p className="text-muted-foreground mb-2">
             Magical Moments in an enchanting atmosphere
@@ -21,20 +21,24 @@ export default function Home() {
           <h2 className="text-4xl font-bold text-foreground">Weddings</h2>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 items-center bg-card rounded-lg shadow-lg p-8">
+        <div
+          className="flex bg-muted
+        "
+        >
           {/* Left side - Image */}
-          <div className="relative h-[300px] w-full">
+
+          <div className="relative h-[400px] w-full">
             <Image
               src="/assets/wedding-illustration.jpg"
               alt="Wedding scene with bride"
               fill
-              className="object-cover rounded-lg"
+              className="object-cover"
               priority
             />
           </div>
 
           {/* Right side - Login Form */}
-          <div className="space-y-6">
+          <div className="space-y-6 w-full p-8">
             <div>
               <h3 className="text-2xl font-bold text-card-foreground mb-2">
                 Ayana Wedding Videos Collections.
@@ -64,7 +68,7 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-secondary text-secondary-foreground py-8 mt-16">
+      <footer className="bg-secondary text-secondary-foreground py-8">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex gap-4 mb-4 md:mb-0">
