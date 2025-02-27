@@ -3,7 +3,7 @@
 import OpenAI from "openai";
 import { FileUpload } from "@/interfaces/openai.interface";
 
-// Initialize OpenAI
+// Initialize OpenAI 1
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY as string });
 
 // Function to upload file to OpenAI
